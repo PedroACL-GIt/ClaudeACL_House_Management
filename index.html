@@ -1,0 +1,1152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=1.0, user-scalable=no">
+<title>Homekeeper</title>
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Homekeeper">
+<meta name="theme-color" content="#f2f2f7" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#000000" media="(prefers-color-scheme: dark)">
+<style>
+/* ============================================================
+   HOMEKEEPER — iOS-styled house management PWA
+   Mobile-first. System font. Light + dark. Safe-area aware.
+   ============================================================ */
+:root{
+  --bg:#f2f2f7;
+  --bg-elev:#ffffff;
+  --group-bg:#ffffff;
+  --ink:#000000;
+  --ink-2:#3c3c43;
+  --ink-3:#8a8a8e;
+  --sep:rgba(60,60,67,.16);
+  --sep-strong:rgba(60,60,67,.29);
+  --tint:#0a84ff;
+  --tint-press:#0060df;
+  --red:#ff3b30;
+  --red-tint:rgba(255,59,48,.12);
+  --orange:#ff9500;
+  --orange-tint:rgba(255,149,0,.14);
+  --green:#34c759;
+  --green-tint:rgba(52,199,89,.14);
+  --purple:#af52de;
+  --fill:rgba(120,120,128,.12);
+  --fill-2:rgba(120,120,128,.16);
+  --nav-bg:rgba(249,249,249,.82);
+  --card-shadow:0 1px 2px rgba(0,0,0,.04);
+  --radius:14px;
+  --safe-top:env(safe-area-inset-top,0px);
+  --safe-bot:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme: dark){
+  :root{
+    --bg:#000000;
+    --bg-elev:#1c1c1e;
+    --group-bg:#1c1c1e;
+    --ink:#ffffff;
+    --ink-2:#ebebf5;
+    --ink-3:#8d8d93;
+    --sep:rgba(84,84,88,.6);
+    --sep-strong:rgba(84,84,88,.75);
+    --tint:#0a84ff;
+    --tint-press:#409cff;
+    --red:#ff453a;
+    --red-tint:rgba(255,69,58,.18);
+    --orange:#ff9f0a;
+    --orange-tint:rgba(255,159,10,.18);
+    --green:#30d158;
+    --green-tint:rgba(48,209,88,.18);
+    --purple:#bf5af2;
+    --fill:rgba(120,120,128,.24);
+    --fill-2:rgba(120,120,128,.32);
+    --nav-bg:rgba(30,30,32,.8);
+    --card-shadow:none;
+  }
+}
+/* Explicit theme overrides (Settings → Appearance) */
+:root[data-theme="light"]{
+  --bg:#f2f2f7;--bg-elev:#fff;--group-bg:#fff;--ink:#000;--ink-2:#3c3c43;--ink-3:#8a8a8e;
+  --sep:rgba(60,60,67,.16);--sep-strong:rgba(60,60,67,.29);--tint:#0a84ff;--tint-press:#0060df;
+  --red:#ff3b30;--red-tint:rgba(255,59,48,.12);--orange:#ff9500;--orange-tint:rgba(255,149,0,.14);
+  --green:#34c759;--green-tint:rgba(52,199,89,.14);--fill:rgba(120,120,128,.12);--fill-2:rgba(120,120,128,.16);
+  --nav-bg:rgba(249,249,249,.82);--card-shadow:0 1px 2px rgba(0,0,0,.04);
+}
+:root[data-theme="dark"]{
+  --bg:#000;--bg-elev:#1c1c1e;--group-bg:#1c1c1e;--ink:#fff;--ink-2:#ebebf5;--ink-3:#8d8d93;
+  --sep:rgba(84,84,88,.6);--sep-strong:rgba(84,84,88,.75);--tint:#0a84ff;--tint-press:#409cff;
+  --red:#ff453a;--red-tint:rgba(255,69,58,.18);--orange:#ff9f0a;--orange-tint:rgba(255,159,10,.18);
+  --green:#30d158;--green-tint:rgba(48,209,88,.18);--fill:rgba(120,120,128,.24);--fill-2:rgba(120,120,128,.32);
+  --nav-bg:rgba(30,30,32,.8);--card-shadow:none;
+}
+
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+html,body{margin:0;padding:0;height:100%;}
+body{
+  background:var(--bg);color:var(--ink);
+  font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  font-size:17px;line-height:1.35;-webkit-font-smoothing:antialiased;
+  overscroll-behavior-y:none;
+}
+button{font-family:inherit;cursor:pointer;border:none;background:none;color:inherit;font-size:17px;}
+input,select,textarea{font-family:inherit;font-size:17px;color:var(--ink);}
+a{color:var(--tint);text-decoration:none;}
+.mono{font-variant-numeric:tabular-nums;}
+
+#app{min-height:100%;}
+
+/* ---------- Screen scaffold ---------- */
+.screen{
+  padding-bottom:calc(64px + var(--safe-bot) + 20px);
+  min-height:100vh;min-height:100dvh;
+  animation:fade .22s ease;
+}
+@keyframes fade{from{opacity:0;transform:translateY(4px);}to{opacity:1;transform:none;}}
+
+.topbar{
+  position:sticky;top:0;z-index:20;
+  padding:calc(var(--safe-top) + 8px) 16px 8px;
+  background:var(--nav-bg);backdrop-filter:saturate(180%) blur(20px);-webkit-backdrop-filter:saturate(180%) blur(20px);
+  border-bottom:.5px solid var(--sep);
+  display:flex;align-items:center;justify-content:space-between;gap:10px;min-height:44px;
+}
+.topbar .tb-title{font-size:17px;font-weight:600;}
+.topbar .tb-left{display:flex;align-items:center;gap:2px;min-width:44px;}
+.topbar .tb-right{display:flex;align-items:center;gap:14px;justify-content:flex-end;min-width:44px;}
+.topbar .backbtn{color:var(--tint);font-size:17px;display:flex;align-items:center;gap:1px;margin-left:-6px;}
+.topbar .backbtn svg{width:12px;height:20px;}
+.topbar .iconbtn{color:var(--tint);font-size:22px;line-height:1;display:flex;}
+.topbar .iconbtn.plus{font-size:26px;font-weight:300;}
+
+.largetitle{padding:4px 16px 8px;}
+.largetitle h1{font-size:34px;font-weight:700;letter-spacing:.37px;margin:2px 0 0;}
+.largetitle .sub{color:var(--ink-3);font-size:15px;margin-top:2px;}
+
+.content{padding:0 16px;}
+
+/* ---------- Search ---------- */
+.searchwrap{padding:6px 16px 4px;}
+.searchbar{display:flex;align-items:center;gap:7px;background:var(--fill);border-radius:10px;padding:8px 10px;}
+.searchbar svg{width:16px;height:16px;fill:var(--ink-3);flex-shrink:0;}
+.searchbar input{border:none;background:none;outline:none;width:100%;font-size:17px;}
+.searchbar input::placeholder{color:var(--ink-3);}
+
+/* ---------- Stat pills ---------- */
+.statgrid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:8px 0 4px;}
+.stat{background:var(--group-bg);border-radius:var(--radius);padding:14px 16px;box-shadow:var(--card-shadow);}
+.stat .n{font-size:32px;font-weight:700;letter-spacing:.3px;line-height:1;}
+.stat .l{font-size:13px;color:var(--ink-3);margin-top:5px;font-weight:500;}
+.stat.red .n{color:var(--red);}
+.stat.orange .n{color:var(--orange);}
+.stat.green .n{color:var(--green);}
+.stat.tint .n{color:var(--tint);}
+
+/* ---------- Section header ---------- */
+.sect{display:flex;align-items:flex-end;justify-content:space-between;margin:26px 0 8px;padding:0 4px;}
+.sect h2{font-size:22px;font-weight:700;letter-spacing:.35px;margin:0;}
+.sect .act{color:var(--tint);font-size:15px;font-weight:400;}
+.grouphdr{font-size:13px;color:var(--ink-3);text-transform:uppercase;letter-spacing:.5px;font-weight:600;margin:24px 4px 7px;}
+
+/* ---------- Inset grouped list (iOS Settings style) ---------- */
+.list{background:var(--group-bg);border-radius:var(--radius);overflow:hidden;box-shadow:var(--card-shadow);}
+.row{
+  display:flex;align-items:center;gap:12px;padding:12px 16px;position:relative;
+  min-height:48px;background:var(--group-bg);width:100%;text-align:left;
+}
+button.row:active,.row.tap:active{background:var(--fill);}
+.row + .row::before{content:"";position:absolute;top:0;left:16px;right:0;height:.5px;background:var(--sep);}
+.row .r-ico{width:29px;height:29px;border-radius:7px;display:flex;align-items:center;justify-content:center;flex-shrink:0;color:#fff;font-size:16px;}
+.row .r-body{flex:1;min-width:0;}
+.row .r-title{font-size:17px;line-height:1.25;}
+.row .r-sub{font-size:13px;color:var(--ink-3);margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.row .r-val{color:var(--ink-3);font-size:16px;margin-left:auto;}
+.row .chev{width:8px;height:14px;flex-shrink:0;opacity:.35;}
+.row .chev path{stroke:var(--ink-3);}
+
+/* ---------- Task card ---------- */
+.cards{display:flex;flex-direction:column;gap:12px;}
+.tcard{
+  background:var(--group-bg);border-radius:var(--radius);padding:14px 15px;box-shadow:var(--card-shadow);
+  position:relative;overflow:hidden;
+}
+.tcard::before{content:"";position:absolute;left:0;top:0;bottom:0;width:4px;}
+.tcard.s-overdue::before{background:var(--red);}
+.tcard.s-soon::before{background:var(--orange);}
+.tcard.s-ok::before{background:var(--green);}
+.tcard .crumb{font-size:12px;color:var(--ink-3);font-weight:600;display:flex;align-items:center;gap:5px;margin-bottom:5px;}
+.tcard .ttl{font-size:17px;font-weight:600;line-height:1.25;margin:0 0 8px;padding-right:24px;}
+.tcard .prio{position:absolute;top:14px;right:14px;font-size:11px;font-weight:700;letter-spacing:.4px;padding:2px 7px;border-radius:20px;text-transform:uppercase;}
+.tcard .prio.high{background:var(--red-tint);color:var(--red);}
+.tcard .prio.med{background:var(--orange-tint);color:var(--orange);}
+.tcard .prio.low{background:var(--fill);color:var(--ink-3);}
+.tcard .due{display:flex;align-items:center;gap:7px;font-size:15px;font-weight:600;margin-bottom:9px;flex-wrap:wrap;}
+.tcard .due .dot{width:9px;height:9px;border-radius:50%;}
+.tcard.s-overdue .due .txt{color:var(--red);}
+.tcard.s-soon .due .txt{color:var(--orange);}
+.tcard.s-ok .due .txt{color:var(--green);}
+.tcard .due .date{color:var(--ink-3);font-size:13px;font-weight:400;}
+.tcard.s-overdue .due .dot{background:var(--red);}
+.tcard.s-soon .due .dot{background:var(--orange);}
+.tcard.s-ok .due .dot{background:var(--green);}
+.tcard .meta{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-bottom:2px;}
+.pill{font-size:12px;font-weight:500;padding:3px 9px;border-radius:20px;background:var(--fill);color:var(--ink-2);}
+.tcard .notes{font-size:14px;color:var(--ink-3);margin-top:8px;line-height:1.4;}
+.tcard .chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:9px;}
+.chip{font-size:12px;padding:3px 8px;border-radius:6px;background:var(--fill);color:var(--ink-2);}
+.chip.missing{background:var(--red-tint);color:var(--red);}
+.tcard .photo{margin-top:10px;border-radius:10px;width:100%;max-height:180px;object-fit:cover;display:block;}
+.tcard .acts{display:flex;gap:8px;margin-top:12px;}
+.tcard .acts button{
+  flex:1;padding:9px;border-radius:9px;font-size:15px;font-weight:600;background:var(--fill);color:var(--tint);
+}
+.tcard .acts button:active{background:var(--fill-2);}
+.tcard .acts button.primary{background:var(--tint);color:#fff;}
+.tcard .acts button.primary:active{background:var(--tint-press);}
+
+/* ---------- Buttons ---------- */
+.btn{display:block;width:100%;padding:14px;border-radius:var(--radius);background:var(--tint);color:#fff;font-size:17px;font-weight:600;text-align:center;}
+.btn:active{background:var(--tint-press);}
+.btn.sec{background:var(--fill);color:var(--tint);}
+.btn.danger{background:var(--red-tint);color:var(--red);}
+.btn.danger:active{background:var(--red);color:#fff;}
+.btn.plain{background:none;color:var(--tint);}
+
+/* ---------- Empty state ---------- */
+.empty{text-align:center;padding:60px 30px;}
+.empty .big{font-size:52px;margin-bottom:14px;}
+.empty h3{font-size:20px;font-weight:700;margin:0 0 6px;}
+.empty p{color:var(--ink-3);font-size:15px;margin:0 auto 20px;max-width:280px;line-height:1.4;}
+
+/* ---------- Tab bar ---------- */
+.tabbar{
+  position:fixed;left:0;right:0;bottom:0;z-index:30;
+  background:var(--nav-bg);backdrop-filter:saturate(180%) blur(20px);-webkit-backdrop-filter:saturate(180%) blur(20px);
+  border-top:.5px solid var(--sep);
+  display:flex;padding-bottom:var(--safe-bot);
+}
+.tabbar button{
+  flex:1;padding:7px 0 6px;display:flex;flex-direction:column;align-items:center;gap:2px;color:var(--ink-3);
+}
+.tabbar button.on{color:var(--tint);}
+.tabbar svg{width:26px;height:26px;}
+.tabbar .lab{font-size:10px;font-weight:500;letter-spacing:.1px;}
+
+/* ---------- Sheet / modal ---------- */
+.scrim{position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:40;animation:sfade .2s ease;}
+@keyframes sfade{from{opacity:0;}to{opacity:1;}}
+.sheet{
+  position:fixed;left:0;right:0;bottom:0;z-index:41;background:var(--bg);
+  border-radius:14px 14px 0 0;max-height:92vh;max-height:92dvh;display:flex;flex-direction:column;
+  animation:slideup .3s cubic-bezier(.2,.8,.2,1);padding-bottom:var(--safe-bot);
+}
+@keyframes slideup{from{transform:translateY(100%);}to{transform:none;}}
+.sheet .grab{width:36px;height:5px;border-radius:3px;background:var(--sep-strong);margin:8px auto 0;flex-shrink:0;}
+.sheet .sheethdr{display:flex;align-items:center;justify-content:space-between;padding:10px 16px;flex-shrink:0;}
+.sheet .sheethdr h3{font-size:17px;font-weight:600;margin:0;}
+.sheet .sheethdr button{font-size:17px;color:var(--tint);}
+.sheet .sheethdr button.done{font-weight:600;}
+.sheet .sheetbody{overflow-y:auto;padding:4px 16px 24px;-webkit-overflow-scrolling:touch;}
+
+/* ---------- Form fields ---------- */
+.field{margin-bottom:16px;}
+.field > label{display:block;font-size:13px;color:var(--ink-3);margin:0 4px 6px;font-weight:600;text-transform:uppercase;letter-spacing:.4px;}
+.field input,.field select,.field textarea{
+  width:100%;padding:12px 14px;border-radius:11px;border:none;background:var(--group-bg);
+  outline:none;box-shadow:var(--card-shadow);appearance:none;-webkit-appearance:none;
+}
+.field textarea{resize:none;min-height:70px;line-height:1.4;}
+.field select{background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'><path d='M2 4l4 4 4-4' stroke='%238a8a8e' stroke-width='1.6' fill='none' stroke-linecap='round' stroke-linejoin='round'/></svg>");background-repeat:no-repeat;background-position:right 14px center;padding-right:36px;}
+.field .hint{font-size:12px;color:var(--ink-3);margin:6px 4px 0;}
+
+.chiplist{display:flex;flex-wrap:wrap;gap:8px;}
+.chiplist .pk{font-size:14px;padding:8px 13px;border-radius:20px;background:var(--group-bg);color:var(--ink-2);box-shadow:var(--card-shadow);}
+.chiplist .pk.on{background:var(--tint);color:#fff;}
+.seg{display:flex;background:var(--fill);border-radius:9px;padding:2px;gap:2px;}
+.seg button{flex:1;padding:8px;border-radius:7px;font-size:14px;font-weight:500;color:var(--ink);}
+.seg button.on{background:var(--bg-elev);box-shadow:0 1px 3px rgba(0,0,0,.12);font-weight:600;}
+
+/* ---------- Misc ---------- */
+.banner{border-radius:11px;padding:11px 14px;font-size:14px;margin:0 0 4px;line-height:1.4;}
+.banner.bad{background:var(--red-tint);color:var(--red);}
+.banner.good{background:var(--green-tint);color:var(--green);}
+.spend-hero{background:var(--group-bg);border-radius:var(--radius);padding:20px;text-align:center;box-shadow:var(--card-shadow);margin-bottom:6px;}
+.spend-hero .amt{font-size:40px;font-weight:700;letter-spacing:.3px;}
+.spend-hero .lab{color:var(--ink-3);font-size:14px;margin-top:2px;}
+.bar{height:8px;border-radius:4px;background:var(--tint);}
+.hidden{display:none!important;}
+.fabnote{color:var(--ink-3);font-size:13px;text-align:center;padding:14px 30px 0;line-height:1.4;}
+</style>
+</head>
+<body>
+<div id="app"><div class="empty" style="padding-top:40vh"><div style="color:var(--ink-3)">Loading…</div></div></div>
+
+<script>
+"use strict";
+/* ============================================================
+   DATA LAYER
+   ============================================================ */
+const STORAGE_KEY = 'homekeeper-data-v2';
+let state = {
+  houses: [], tools: [],
+  view: {type:'home'},
+  settings: {theme:'auto', currency:'£'},
+  storageOk:null, storageMode:'', saveError:'', search:''
+};
+
+const ROOM_TEMPLATES = {
+  "Kitchen":[], "Bathroom":[], "Bedroom":[], "Living Room":[], "Garage":[],
+  "Basement / Utility":[], "Attic":[], "Office":[], "Hallway / Stairs":[],
+  "Garden":[
+    {title:"Mow and edge the lawn", category:"Garden / Exterior", intervalMonths:1},
+    {title:"Reseed / feed bare lawn patches", category:"Garden / Exterior", intervalMonths:6},
+    {title:"Paint or treat the fence", category:"Painting", intervalMonths:24},
+    {title:"Trim hedges and trees", category:"Garden / Exterior", intervalMonths:3},
+    {title:"Service the lawnmower", category:"Garden / Exterior", intervalMonths:12}
+  ],
+  "Other":[]
+};
+const GENERAL_ROOM_TYPE = "General";
+const GENERAL_TASKS = [
+  {title:"Test smoke & CO detectors", category:"Safety", intervalMonths:6, priority:"high"},
+  {title:"Clean gutters", category:"Garden / Exterior", intervalMonths:6},
+  {title:"Replace HVAC / boiler filter", category:"HVAC", intervalMonths:3},
+  {title:"Check fire extinguisher", category:"Safety", intervalMonths:12, priority:"high"},
+  {title:"Bleed radiators", category:"HVAC", intervalMonths:12},
+  {title:"Pest control check", category:"Other", intervalMonths:12}
+];
+const CATEGORIES = ["Painting","Plumbing","Electrical","HVAC","Carpentry","Roofing","Appliance","Garden / Exterior","Safety","Cleaning","Other"];
+const CATEGORY_TOOLS = {
+  "Painting":["Paint brush","Roller","Painter's tape","Drop cloth","Sandpaper"],
+  "Plumbing":["Pipe wrench","Plunger","Teflon tape","Adjustable wrench"],
+  "Electrical":["Voltage tester","Screwdriver set","Wire strippers","Electrical tape"],
+  "HVAC":["Filter","Vacuum","Screwdriver set"],
+  "Carpentry":["Hammer","Drill","Screws","Level","Tape measure"],
+  "Roofing":["Ladder","Caulk gun","Roofing sealant"],
+  "Appliance":["Screwdriver set","Multimeter"],
+  "Garden / Exterior":["Pruning shears","Ladder","Hose","Fence sealant"],
+  "Safety":["Screwdriver set","Batteries"],
+  "Cleaning":["Vacuum","Microfiber cloths"],
+  "Other":["Screwdriver set"]
+};
+const CATEGORY_STORE = {
+  "Painting":"paint store","Plumbing":"plumbing supply store","Electrical":"electrical supply store",
+  "HVAC":"HVAC supply store","Carpentry":"hardware store","Roofing":"roofing supply store",
+  "Appliance":"appliance parts store","Garden / Exterior":"garden centre","Safety":"hardware store",
+  "Cleaning":"home goods store","Other":"hardware store"
+};
+const CATEGORY_ICON = {
+  "Painting":"🎨","Plumbing":"🔧","Electrical":"⚡️","HVAC":"🌡️","Carpentry":"🪚","Roofing":"🏠",
+  "Appliance":"🔌","Garden / Exterior":"🌿","Safety":"🚨","Cleaning":"🧽","Other":"🛠️"
+};
+const CATEGORY_COLOR = {
+  "Painting":"#af52de","Plumbing":"#0a84ff","Electrical":"#ff9500","HVAC":"#ff2d55","Carpentry":"#a2845e",
+  "Appliance":"#5856d6","Garden / Exterior":"#34c759","Roofing":"#8e8e93","Safety":"#ff3b30",
+  "Cleaning":"#00c7be","Other":"#8e8e93"
+};
+const TRADES = ["Plumber","Electrician","Builder","Roofer","Gardener","Handyman","HVAC engineer","Decorator","Pest control","Other"];
+const DEFAULT_TOOLS = ["Hammer","Screwdriver set","Drill","Tape measure","Level","Paint brush","Roller",
+  "Pipe wrench","Plunger","Ladder","Voltage tester","Wire strippers","Adjustable wrench","Vacuum"];
+
+/* ---------- utils ---------- */
+function uid(){ return Math.random().toString(36).slice(2,10); }
+function todayISO(){ return new Date().toISOString().slice(0,10); }
+function addMonths(dateStr, months){ const d=new Date(dateStr); d.setMonth(d.getMonth()+Number(months)); return d.toISOString().slice(0,10); }
+function daysUntil(dateStr){ const now=new Date(todayISO()); const due=new Date(dateStr); return Math.round((due-now)/86400000); }
+function taskStatus(t){ const d=daysUntil(t.nextDue); if(d<0)return'overdue'; if(d<=30)return'soon'; return'ok'; }
+function statusLabel(s){ return s==='overdue'?'Overdue':s==='soon'?'Due soon':'On track'; }
+function fmtDate(iso){ if(!iso) return ''; const d=new Date(iso); return d.toLocaleDateString(undefined,{day:'numeric',month:'short',year:'numeric'}); }
+function money(n){ const c=state.settings.currency||'£'; return c+(Number(n)||0).toLocaleString(undefined,{minimumFractionDigits:0,maximumFractionDigits:2}); }
+function intervalText(m){ m=Number(m); if(m===1)return'Monthly'; if(m===12)return'Yearly'; if(m===3)return'Every 3 months'; if(m===6)return'Every 6 months'; if(m>=12&&m%12===0)return'Every '+(m/12)+' years'; return'Every '+m+' months'; }
+
+/* ---------- storage (Claude in-chat OR localStorage) ---------- */
+function claudeStorageReady(){ return typeof window!=='undefined'&&window.storage&&typeof window.storage.get==='function'&&typeof window.storage.set==='function'; }
+async function waitForClaudeStorage(maxWaitMs=1000, intervalMs=100){
+  const start=Date.now();
+  while(Date.now()-start<maxWaitMs){ if(claudeStorageReady())return true; await new Promise(r=>setTimeout(r,intervalMs)); }
+  return claudeStorageReady();
+}
+function localStorageReady(){ try{ if(typeof localStorage==='undefined')return false; localStorage.setItem('__hk__','1'); localStorage.removeItem('__hk__'); return true; }catch(e){ return false; } }
+function seedTools(){ return DEFAULT_TOOLS.map(n=>({id:uid(),name:n,have:true})); }
+
+function applyLoaded(parsed){
+  state.houses = (parsed.houses||[]).map(migrateHouse);
+  state.tools = parsed.tools || seedTools();
+  if(parsed.settings) state.settings = Object.assign(state.settings, parsed.settings);
+}
+// bring older / v1 tasks up to the new shape
+function migrateHouse(h){
+  h.contacts = h.contacts || [];
+  (h.rooms||[]).forEach(r=>{
+    (r.tasks||[]).forEach(t=>{
+      t.priority = t.priority || 'med';
+      t.history = t.history || [];
+      t.photo = t.photo || '';
+    });
+  });
+  return h;
+}
+
+async function loadState(){
+  const claudeReady = await waitForClaudeStorage();
+  if(claudeReady){
+    state.storageMode='claude';
+    try{
+      const res = await window.storage.get(STORAGE_KEY, false);
+      state.storageOk=true;
+      if(res&&res.value){ applyLoaded(JSON.parse(res.value)); }
+      else { state.tools=seedTools(); await persist(); }
+    }catch(e){ state.tools=seedTools(); state.storageOk=true; await persist(); }
+  } else if(localStorageReady()){
+    state.storageMode='local';
+    try{
+      const raw=localStorage.getItem(STORAGE_KEY);
+      state.storageOk=true;
+      if(raw){ applyLoaded(JSON.parse(raw)); }
+      else { state.tools=seedTools(); await persist(); }
+    }catch(e){ state.storageOk=false; state.saveError=String(e.message||e); state.tools=seedTools(); }
+  } else {
+    state.storageMode=''; state.storageOk=false; state.tools=seedTools();
+  }
+  applyTheme();
+  render();
+}
+
+async function persist(){
+  const payload = JSON.stringify({houses:state.houses, tools:state.tools, settings:state.settings});
+  if(state.storageMode==='claude'&&claudeStorageReady()){
+    try{ await window.storage.set(STORAGE_KEY,payload,false); state.storageOk=true; state.saveError=''; }
+    catch(e){ state.storageOk=false; state.saveError=String(e.message||e); }
+  } else if(localStorageReady()){
+    try{ localStorage.setItem(STORAGE_KEY,payload); state.storageMode='local'; state.storageOk=true; state.saveError=''; }
+    catch(e){ state.storageOk=false; state.saveError=String(e.message||e); }
+  } else { state.storageOk=false; }
+}
+// save + re-render
+function save(){ persist().then(render); }
+
+/* ---------- theme ---------- */
+function applyTheme(){
+  const t=state.settings.theme;
+  if(t==='light'||t==='dark') document.documentElement.setAttribute('data-theme',t);
+  else document.documentElement.removeAttribute('data-theme');
+}
+
+/* ============================================================
+   DOM HELPER
+   ============================================================ */
+const app=document.getElementById('app');
+function el(tag,attrs={},children=[]){
+  const e=document.createElement(tag);
+  for(const k in attrs){
+    if(attrs[k]==null) continue;
+    if(k==='class') e.className=attrs[k];
+    else if(k==='html') e.innerHTML=attrs[k];
+    else if(k.startsWith('on')) e.addEventListener(k.slice(2),attrs[k]);
+    else e.setAttribute(k,attrs[k]);
+  }
+  (Array.isArray(children)?children:[children]).forEach(c=>{ if(c==null)return; e.appendChild(typeof c==='string'?document.createTextNode(c):c); });
+  return e;
+}
+const CHEV='<svg class="chev" viewBox="0 0 8 14" fill="none"><path d="M1 1l6 6-6 6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+const BACK='<svg viewBox="0 0 12 20" fill="none"><path d="M10 1L2 10l8 9" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+const SEARCH_ICO='<svg viewBox="0 0 16 16"><path d="M6.5 1a5.5 5.5 0 013.9 9.4l3.1 3.1a1 1 0 01-1.4 1.4l-3.1-3.1A5.5 5.5 0 116.5 1zm0 2a3.5 3.5 0 100 7 3.5 3.5 0 000-7z"/></svg>';
+
+function allTasksFlat(){
+  const out=[];
+  state.houses.forEach(h=>h.rooms.forEach(r=>r.tasks.forEach(t=>out.push({house:h,room:r,task:t}))));
+  return out;
+}
+function nav(view){ state.view=view; window.scrollTo(0,0); render(); }
+
+/* ============================================================
+   SCREENS
+   ============================================================ */
+function topbar(opts){
+  const {title, back, right} = opts;
+  return el('div',{class:'topbar'},[
+    el('div',{class:'tb-left'}, back? el('button',{class:'backbtn',html:BACK+'<span>'+(back.label||'Back')+'</span>',onclick:back.onClick}) : null),
+    el('div',{class:'tb-title'}, title||''),
+    el('div',{class:'tb-right'}, right||null)
+  ]);
+}
+function plusBtn(onClick){ return el('button',{class:'iconbtn plus','aria-label':'Add',onclick:onClick},'+'); }
+
+/* ---------- HOME / DASHBOARD ---------- */
+function screenHome(){
+  const scr=el('div',{class:'screen'});
+  const flat=allTasksFlat();
+  const overdue=flat.filter(x=>taskStatus(x.task)==='overdue');
+  const soon=flat.filter(x=>taskStatus(x.task)==='soon');
+  const ok=flat.filter(x=>taskStatus(x.task)==='ok');
+
+  scr.appendChild(topbar({title:'', right: plusBtn(()=>{ state.houses.length? openTaskPicker() : openHouseSheet(); })}));
+
+  scr.appendChild(el('div',{class:'largetitle'},[
+    el('h1',{}, greeting()),
+    el('div',{class:'sub'}, new Date().toLocaleDateString(undefined,{weekday:'long',day:'numeric',month:'long'}))
+  ]));
+
+  // search
+  scr.appendChild(searchBox());
+  const q=state.search.trim().toLowerCase();
+
+  const body=el('div',{class:'content'});
+
+  if(q){
+    const hits=flat.filter(x=> (x.task.title+' '+x.task.category+' '+x.house.name+' '+x.room.name+' '+(x.task.notes||'')).toLowerCase().includes(q));
+    body.appendChild(el('div',{class:'sect'},[el('h2',{}, hits.length+' result'+(hits.length===1?'':'s'))]));
+    if(hits.length) body.appendChild(taskCards(hits));
+    else body.appendChild(el('p',{style:'color:var(--ink-3);padding:20px 4px;'},'Nothing matches “'+state.search+'”.'));
+    scr.appendChild(body);
+    return scr;
+  }
+
+  if(flat.length===0){
+    body.appendChild(el('div',{class:'empty'},[
+      el('div',{class:'big'},'🏡'),
+      el('h3',{},'Welcome to Homekeeper'),
+      el('p',{},'Add your first home to start tracking repairs, maintenance schedules and jobs.'),
+      el('button',{class:'btn',style:'max-width:320px;margin:0 auto;',onclick:openHouseSheet},'Add a home')
+    ]));
+    scr.appendChild(body);
+    return scr;
+  }
+
+  // stat grid
+  body.appendChild(el('div',{class:'statgrid'},[
+    el('div',{class:'stat red'},[el('div',{class:'n'},String(overdue.length)),el('div',{class:'l'},'Overdue')]),
+    el('div',{class:'stat orange'},[el('div',{class:'n'},String(soon.length)),el('div',{class:'l'},'Due within 30 days')]),
+    el('div',{class:'stat green'},[el('div',{class:'n'},String(ok.length)),el('div',{class:'l'},'On track')]),
+    el('div',{class:'stat tint'},[el('div',{class:'n'},String(state.houses.length)),el('div',{class:'l'},'Home'+(state.houses.length===1?'':'s')+' tracked')])
+  ]));
+
+  if(overdue.length){ body.appendChild(el('div',{class:'sect'},[el('h2',{},'Needs attention')])); body.appendChild(taskCards(overdue)); }
+  if(soon.length){ body.appendChild(el('div',{class:'sect'},[el('h2',{},'Coming up')])); body.appendChild(taskCards(soon)); }
+  if(ok.length){ body.appendChild(el('div',{class:'sect'},[el('h2',{},'On track')])); body.appendChild(taskCards(ok)); }
+
+  scr.appendChild(body);
+  return scr;
+}
+function greeting(){ const h=new Date().getHours(); return h<12?'Good morning':h<18?'Good afternoon':'Good evening'; }
+function searchBox(){
+  const inp=el('input',{type:'search',placeholder:'Search jobs',value:state.search,
+    oninput:e=>{ state.search=e.target.value; /* live filter, cheap re-render of home */ if(state.view.type==='home') render(); }});
+  const wrap=el('div',{class:'searchwrap'},[ el('div',{class:'searchbar'},[ el('span',{html:SEARCH_ICO}), inp ]) ]);
+  // keep focus after re-render
+  requestAnimationFrame(()=>{ if(state.search){ inp.focus(); inp.setSelectionRange(inp.value.length,inp.value.length); } });
+  return wrap;
+}
+
+function taskCards(items){
+  const wrap=el('div',{class:'cards'});
+  items.sort((a,b)=>daysUntil(a.task.nextDue)-daysUntil(b.task.nextDue));
+  items.forEach(({house,room,task})=>wrap.appendChild(taskCard(house,room,task,true)));
+  return wrap;
+}
+
+function taskCard(house,room,task,showCrumb){
+  const s=taskStatus(task);
+  const d=daysUntil(task.nextDue);
+  const dueText=d<0?`Overdue by ${Math.abs(d)} day${Math.abs(d)===1?'':'s'}`:d===0?'Due today':`Due in ${d} day${d===1?'':'s'}`;
+  const card=el('div',{class:`tcard s-${s}`});
+  if(task.priority&&task.priority!=='med') card.appendChild(el('span',{class:'prio '+(task.priority)}, task.priority==='high'?'High':'Low'));
+  if(showCrumb) card.appendChild(el('div',{class:'crumb'}, `${CATEGORY_ICON[task.category]||'🛠️'} ${house.name} · ${room.name}`));
+  card.appendChild(el('h4',{class:'ttl'}, task.title));
+  card.appendChild(el('div',{class:'due'},[
+    el('span',{class:'dot'}),
+    el('span',{class:'txt'}, dueText),
+    el('span',{class:'date mono'}, '· '+fmtDate(task.nextDue))
+  ]));
+  card.appendChild(el('div',{class:'meta'},[
+    el('span',{class:'pill'}, task.category),
+    el('span',{class:'pill'}, intervalText(task.intervalMonths))
+  ]));
+  if(task.notes) card.appendChild(el('div',{class:'notes'}, task.notes));
+  if(task.photo) card.appendChild(el('img',{class:'photo',src:task.photo,alt:''}));
+
+  const owned=new Set(state.tools.filter(t=>t.have).map(t=>t.name.toLowerCase()));
+  if(task.tools&&task.tools.length){
+    const chips=el('div',{class:'chips'});
+    task.tools.forEach(tn=>{ const have=owned.has(tn.toLowerCase()); chips.appendChild(el('span',{class:'chip'+(have?'':' missing')}, have?tn:tn+' — buy')); });
+    card.appendChild(chips);
+  }
+  const acts=el('div',{class:'acts'});
+  acts.appendChild(el('button',{class:'primary',onclick:()=>openMarkDone(house.id,room.id,task.id)},'✓ Mark done'));
+  acts.appendChild(el('button',{onclick:()=>openTaskSheet(house.id,room.id,task)},'Edit'));
+  card.appendChild(acts);
+  return card;
+}
+
+/* ---------- HOUSES LIST ---------- */
+function screenHouses(){
+  const scr=el('div',{class:'screen'});
+  scr.appendChild(topbar({title:'', right: plusBtn(openHouseSheet)}));
+  scr.appendChild(el('div',{class:'largetitle'},[el('h1',{},'Homes')]));
+  const body=el('div',{class:'content'});
+
+  if(state.houses.length===0){
+    body.appendChild(el('div',{class:'empty'},[
+      el('div',{class:'big'},'🏠'),
+      el('h3',{},'No homes yet'),
+      el('p',{},'Track maintenance for your own place, a rental, or a family member’s home.'),
+      el('button',{class:'btn',style:'max-width:320px;margin:0 auto;',onclick:openHouseSheet},'Add a home')
+    ]));
+    scr.appendChild(body); return scr;
+  }
+  const list=el('div',{class:'list'});
+  state.houses.forEach(h=>{
+    const taskCount=h.rooms.reduce((s,r)=>s+r.tasks.length,0);
+    const overdue=h.rooms.reduce((s,r)=>s+r.tasks.filter(t=>taskStatus(t)==='overdue').length,0);
+    const sub = `${h.type} · ${taskCount} job${taskCount===1?'':'s'}` + (overdue?` · ${overdue} overdue`:'');
+    list.appendChild(el('button',{class:'row tap',onclick:()=>nav({type:'house',id:h.id})},[
+      el('div',{class:'r-ico',style:'background:'+(overdue?'var(--red)':'var(--tint)')},'🏠'),
+      el('div',{class:'r-body'},[ el('div',{class:'r-title'}, h.name), el('div',{class:'r-sub',style:overdue?'color:var(--red)':''}, sub) ]),
+      el('span',{html:CHEV})
+    ]));
+  });
+  body.appendChild(list);
+  scr.appendChild(body);
+  return scr;
+}
+
+/* ---------- HOUSE DETAIL ---------- */
+function screenHouse(id){
+  const house=state.houses.find(h=>h.id===id);
+  const scr=el('div',{class:'screen'});
+  if(!house){ scr.appendChild(topbar({title:'Home',back:{label:'Homes',onClick:()=>nav({type:'houses'})}})); return scr; }
+  scr.appendChild(topbar({
+    title:house.name,
+    back:{label:'Homes',onClick:()=>nav({type:'houses'})},
+    right: el('button',{class:'iconbtn',style:'font-size:20px;',onclick:()=>openHouseSheet(house.id)},'⋯')
+  }));
+  scr.appendChild(el('div',{class:'largetitle'},[ el('h1',{}, house.name), el('div',{class:'sub'}, house.type + (house.address?(' · '+house.address):'')) ]));
+
+  const body=el('div',{class:'content'});
+
+  // contacts
+  body.appendChild(el('div',{class:'sect'},[ el('h2',{},'Contacts'), el('button',{class:'act',onclick:()=>openContactSheet(house.id)},'+ Add') ]));
+  if(house.contacts.length){
+    const cl=el('div',{class:'list'});
+    house.contacts.forEach(c=>{
+      const row=el('div',{class:'row'},[
+        el('div',{class:'r-ico',style:'background:var(--purple)'},'👤'),
+        el('div',{class:'r-body'},[ el('div',{class:'r-title'}, c.name), el('div',{class:'r-sub'}, c.trade + (c.notes?(' · '+c.notes):'')) ]),
+        c.phone? el('a',{class:'r-val',href:'tel:'+c.phone.replace(/\s/g,''),style:'color:var(--tint)',onclick:e=>e.stopPropagation()},'Call') : null
+      ]);
+      row.classList.add('tap');
+      row.addEventListener('click',()=>openContactSheet(house.id,c));
+      cl.appendChild(row);
+    });
+    body.appendChild(cl);
+  } else {
+    body.appendChild(el('div',{class:'list'},[ el('div',{class:'row',style:'color:var(--ink-3);justify-content:center;'},'No plumber, electrician or trades saved yet') ]));
+  }
+
+  // rooms + tasks
+  house.rooms.forEach(room=>{
+    body.appendChild(el('div',{class:'sect'},[
+      el('h2',{}, room.name + (room.type!==room.name?'':'')),
+      el('button',{class:'act',onclick:()=>openTaskSheet(house.id,room.id,null)},'+ Job')
+    ]));
+    if(room.tasks.length===0){
+      body.appendChild(el('div',{class:'list'},[
+        el('button',{class:'row tap',style:'color:var(--tint);justify-content:center;',onclick:()=>openTaskSheet(house.id,room.id,null)},'Add a job to this room')
+      ]));
+    } else {
+      const cards=el('div',{class:'cards'});
+      room.tasks.slice().sort((a,b)=>daysUntil(a.nextDue)-daysUntil(b.nextDue)).forEach(t=>cards.appendChild(taskCard(house,room,t,false)));
+      body.appendChild(cards);
+    }
+    body.appendChild(el('button',{class:'btn plain',style:'padding:8px;font-size:14px;text-align:right;',onclick:()=>{ if(confirm('Delete room “'+room.name+'” and all its jobs?')) deleteRoom(house.id,room.id); }},'Delete room'));
+  });
+
+  body.appendChild(el('div',{style:'height:14px'}));
+  body.appendChild(el('button',{class:'btn sec',onclick:()=>openRoomSheet(house.id)},'+ Add a room'));
+  body.appendChild(el('div',{style:'height:12px'}));
+  body.appendChild(el('button',{class:'btn danger',onclick:()=>{ if(confirm('Delete “'+house.name+'”? This removes all its rooms and jobs.')) deleteHouse(house.id); }},'Delete home'));
+
+  scr.appendChild(body);
+  return scr;
+}
+
+/* ---------- TOOLS ---------- */
+function screenTools(){
+  const scr=el('div',{class:'screen'});
+  scr.appendChild(topbar({title:'', right: plusBtn(openAddToolSheet)}));
+  scr.appendChild(el('div',{class:'largetitle'},[ el('h1',{},'Tools'), el('div',{class:'sub'}, state.tools.filter(t=>t.have).length+' of '+state.tools.length+' in your kit') ]));
+  const body=el('div',{class:'content'});
+  const list=el('div',{class:'list'});
+  if(state.tools.length===0) list.appendChild(el('div',{class:'row',style:'color:var(--ink-3);justify-content:center;'},'No tools yet'));
+  state.tools.forEach(t=>{
+    const row=el('div',{class:'row'});
+    const sw=makeSwitch(t.have,(v)=>{ t.have=v; save(); });
+    row.appendChild(el('div',{class:'r-ico',style:'background:'+(t.have?'var(--green)':'var(--fill-2)')+';color:'+(t.have?'#fff':'var(--ink-3)')}, t.have?'✓':'—'));
+    row.appendChild(el('div',{class:'r-body'},[ el('div',{class:'r-title'}, t.name) ]));
+    row.appendChild(sw);
+    row.appendChild(el('button',{style:'color:var(--ink-3);padding:4px 0 4px 10px;',onclick:()=>{ state.tools=state.tools.filter(x=>x.id!==t.id); save(); }},'✕'));
+    list.appendChild(row);
+  });
+  body.appendChild(list);
+  body.appendChild(el('div',{class:'fabnote'},'Tools you own show as “in kit”. Jobs needing a tool you don’t have will flag it to buy.'));
+  scr.appendChild(body);
+  return scr;
+}
+function makeSwitch(on,onChange){
+  const track=el('button',{style:`width:51px;height:31px;border-radius:16px;padding:2px;transition:background .2s;background:${on?'var(--green)':'var(--fill-2)'};flex-shrink:0;`});
+  const knob=el('div',{style:`width:27px;height:27px;border-radius:50%;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.3);transition:transform .2s;transform:translateX(${on?20:0}px);`});
+  track.appendChild(knob);
+  track.addEventListener('click',()=>{ on=!on; track.style.background=on?'var(--green)':'var(--fill-2)'; knob.style.transform=`translateX(${on?20:0}px)`; onChange(on); });
+  return track;
+}
+
+/* ---------- MORE ---------- */
+function screenMore(){
+  const scr=el('div',{class:'screen'});
+  scr.appendChild(topbar({title:''}));
+  scr.appendChild(el('div',{class:'largetitle'},[el('h1',{},'More')]));
+  const body=el('div',{class:'content'});
+
+  if(state.storageOk===false){
+    body.appendChild(el('div',{class:'banner bad'},'⚠️ Auto-save isn’t available here. Use Backup below to copy your data out before closing.'));
+  }
+
+  // spending summary
+  const spend=spendingTotals();
+  body.appendChild(el('div',{class:'grouphdr'},'This year'));
+  body.appendChild(el('div',{class:'spend-hero'},[
+    el('div',{class:'amt'}, money(spend.year)),
+    el('div',{class:'lab'}, 'spent on maintenance in '+new Date().getFullYear())
+  ]));
+
+  body.appendChild(el('div',{class:'grouphdr'},'Manage'));
+  const l1=el('div',{class:'list'});
+  l1.appendChild(rowLink('📊','Spending & history', spend.count+' logged job'+(spend.count===1?'':'s'), ()=>nav({type:'spending'})));
+  l1.appendChild(rowLink('💾','Backup & restore', state.storageOk?(state.storageMode==='local'?'Saved on this device':'Saved in this chat'):'Not saving — act now', ()=>nav({type:'backup'})));
+  body.appendChild(l1);
+
+  body.appendChild(el('div',{class:'grouphdr'},'Appearance'));
+  const themeField=el('div',{class:'seg'});
+  ['auto','light','dark'].forEach(opt=>{
+    themeField.appendChild(el('button',{class:state.settings.theme===opt?'on':'',onclick:()=>{ state.settings.theme=opt; applyTheme(); save(); }}, opt[0].toUpperCase()+opt.slice(1)));
+  });
+  body.appendChild(el('div',{class:'list',style:'padding:12px 14px;'},[themeField]));
+
+  body.appendChild(el('div',{class:'grouphdr'},'Currency'));
+  const curField=el('div',{class:'seg'});
+  ['£','$','€'].forEach(c=>{ curField.appendChild(el('button',{class:state.settings.currency===c?'on':'',onclick:()=>{ state.settings.currency=c; save(); }}, c)); });
+  body.appendChild(el('div',{class:'list',style:'padding:12px 14px;'},[curField]));
+
+  body.appendChild(el('div',{class:'fabnote'},'Homekeeper · Add to Home Screen from Safari’s share menu to use it like a native app, offline.'));
+  scr.appendChild(body);
+  return scr;
+}
+function rowLink(icon,title,sub,onClick,color){
+  return el('button',{class:'row tap',onclick:onClick},[
+    el('div',{class:'r-ico',style:'background:'+(color||'var(--tint)')}, icon),
+    el('div',{class:'r-body'},[ el('div',{class:'r-title'},title), sub?el('div',{class:'r-sub'},sub):null ]),
+    el('span',{html:CHEV})
+  ]);
+}
+
+/* ---------- SPENDING ---------- */
+function spendingTotals(){
+  const yr=new Date().getFullYear();
+  let year=0, all=0, count=0; const byCat={}; const entries=[];
+  allTasksFlat().forEach(({house,room,task})=>{
+    (task.history||[]).forEach(h=>{
+      count++;
+      const c=Number(h.cost)||0; all+=c;
+      if(new Date(h.date).getFullYear()===yr) year+=c;
+      byCat[task.category]=(byCat[task.category]||0)+c;
+      entries.push({house,room,task,h});
+    });
+  });
+  entries.sort((a,b)=>new Date(b.h.date)-new Date(a.h.date));
+  return {year,all,count,byCat,entries};
+}
+function screenSpending(){
+  const scr=el('div',{class:'screen'});
+  scr.appendChild(topbar({title:'Spending & History',back:{label:'More',onClick:()=>nav({type:'more'})}}));
+  const body=el('div',{class:'content',style:'padding-top:10px'});
+  const s=spendingTotals();
+  body.appendChild(el('div',{class:'spend-hero'},[ el('div',{class:'amt'}, money(s.all)), el('div',{class:'lab'},'total logged across all homes') ]));
+
+  const cats=Object.entries(s.byCat).filter(([,v])=>v>0).sort((a,b)=>b[1]-a[1]);
+  if(cats.length){
+    const max=cats[0][1];
+    body.appendChild(el('div',{class:'grouphdr'},'By category'));
+    const list=el('div',{class:'list',style:'padding:6px 16px;'});
+    cats.forEach(([cat,v],i)=>{
+      list.appendChild(el('div',{style:'padding:10px 0;'+(i?'border-top:.5px solid var(--sep)':'')},[
+        el('div',{style:'display:flex;justify-content:space-between;margin-bottom:6px;font-size:15px;'},[ el('span',{}, (CATEGORY_ICON[cat]||'')+' '+cat), el('span',{class:'mono',style:'font-weight:600'}, money(v)) ]),
+        el('div',{style:'height:8px;border-radius:4px;background:var(--fill);overflow:hidden'},[ el('div',{class:'bar',style:`width:${Math.max(6,v/max*100)}%;background:${CATEGORY_COLOR[cat]||'var(--tint)'}`}) ])
+      ]));
+    });
+    body.appendChild(list);
+  }
+
+  body.appendChild(el('div',{class:'grouphdr'},'History'));
+  if(s.entries.length===0){
+    body.appendChild(el('div',{class:'list'},[ el('div',{class:'row',style:'color:var(--ink-3);justify-content:center;'},'No completed jobs logged yet') ]));
+  } else {
+    const list=el('div',{class:'list'});
+    s.entries.slice(0,100).forEach(({house,task,h})=>{
+      list.appendChild(el('div',{class:'row'},[
+        el('div',{class:'r-ico',style:'background:'+(CATEGORY_COLOR[task.category]||'var(--tint)')}, CATEGORY_ICON[task.category]||'🛠️'),
+        el('div',{class:'r-body'},[ el('div',{class:'r-title'}, task.title), el('div',{class:'r-sub'}, fmtDate(h.date)+' · '+house.name+(h.note?(' · '+h.note):'')) ]),
+        h.cost? el('span',{class:'r-val mono',style:'font-weight:600'}, money(h.cost)) : null
+      ]));
+    });
+    body.appendChild(list);
+  }
+  scr.appendChild(body);
+  return scr;
+}
+
+/* ---------- BACKUP ---------- */
+function screenBackup(){
+  const scr=el('div',{class:'screen'});
+  scr.appendChild(topbar({title:'Backup & Restore',back:{label:'More',onClick:()=>nav({type:'more'})}}));
+  const body=el('div',{class:'content',style:'padding-top:10px'});
+  const data=JSON.stringify({houses:state.houses,tools:state.tools,settings:state.settings});
+
+  if(state.storageOk) body.appendChild(el('div',{class:'banner good'}, state.storageMode==='local'?'✓ Auto-saving on this device':'✓ Auto-saving in this chat'));
+  else body.appendChild(el('div',{class:'banner bad'},'⚠️ Not auto-saving. Copy or download your data now.'));
+
+  body.appendChild(el('div',{class:'grouphdr'},'Save a backup'));
+  body.appendChild(el('p',{style:'color:var(--ink-3);font-size:14px;margin:0 4px 12px;'},'Download a file or copy the text somewhere safe.'));
+  const dlBtn=el('button',{class:'btn',onclick:()=>{
+    try{
+      const blob=new Blob([data],{type:'application/json'});
+      const url=URL.createObjectURL(blob);
+      const a=el('a',{href:url,download:'homekeeper-backup-'+todayISO()+'.json'}); document.body.appendChild(a); a.click(); a.remove();
+      setTimeout(()=>URL.revokeObjectURL(url),1000);
+    }catch(e){ alert('Download not supported here — copy the text instead.'); }
+  }},'⬇︎ Download backup file');
+  body.appendChild(dlBtn);
+  const ta=el('textarea',{readonly:'readonly',style:'width:100%;height:120px;margin-top:12px;padding:12px;border-radius:11px;border:none;background:var(--group-bg);font-family:ui-monospace,Menlo,monospace;font-size:12px;box-shadow:var(--card-shadow);'});
+  ta.value=data;
+  body.appendChild(ta);
+  const copyBtn=el('button',{class:'btn sec',style:'margin-top:10px;',onclick:async()=>{
+    let ok=false; ta.focus(); ta.select();
+    try{ await navigator.clipboard.writeText(ta.value); ok=true; }catch(e){}
+    if(!ok){ try{ ok=document.execCommand('copy'); }catch(e){} }
+    copyBtn.textContent=ok?'Copied ✓':'Select above & copy manually';
+    setTimeout(()=>copyBtn.textContent='Copy backup text',2200);
+  }},'Copy backup text');
+  body.appendChild(copyBtn);
+
+  body.appendChild(el('div',{class:'grouphdr'},'Restore'));
+  body.appendChild(el('p',{style:'color:var(--ink-3);font-size:14px;margin:0 4px 12px;'},'Paste a backup below. This replaces everything currently in the app.'));
+  const imp=el('textarea',{placeholder:'Paste backup text here',style:'width:100%;height:110px;padding:12px;border-radius:11px;border:none;background:var(--group-bg);font-family:ui-monospace,Menlo,monospace;font-size:12px;box-shadow:var(--card-shadow);'});
+  body.appendChild(imp);
+  const impBtn=el('button',{class:'btn sec',style:'margin-top:10px;',onclick:()=>{
+    try{
+      const parsed=JSON.parse(imp.value);
+      if(!parsed.houses) throw new Error('missing houses');
+      applyLoaded(parsed); applyTheme(); save(); nav({type:'home'});
+    }catch(e){ impBtn.textContent='Could not read that — check the full text'; setTimeout(()=>impBtn.textContent='Restore this backup',2600); }
+  }},'Restore this backup');
+  body.appendChild(impBtn);
+  scr.appendChild(body);
+  return scr;
+}
+
+/* ============================================================
+   SHEETS (modals)
+   ============================================================ */
+function openSheet(title, buildBody, onDone){
+  closeSheet();
+  const scrim=el('div',{class:'scrim',onclick:closeSheet});
+  const sheet=el('div',{class:'sheet'});
+  sheet.addEventListener('click',e=>e.stopPropagation());
+  sheet.appendChild(el('div',{class:'grab'}));
+  sheet.appendChild(el('div',{class:'sheethdr'},[
+    el('button',{onclick:closeSheet},'Cancel'),
+    el('h3',{},title),
+    onDone? el('button',{class:'done',onclick:onDone},'Save') : el('span',{style:'width:44px'})
+  ]));
+  const bodyEl=el('div',{class:'sheetbody'});
+  buildBody(bodyEl, sheet);
+  sheet.appendChild(bodyEl);
+  document.body.appendChild(scrim);
+  document.body.appendChild(sheet);
+}
+function closeSheet(){ document.querySelectorAll('.scrim,.sheet').forEach(n=>n.remove()); }
+function field(label,input,hint){ const f=el('div',{class:'field'},[ el('label',{},label), input ]); if(hint) f.appendChild(el('div',{class:'hint'},hint)); return f; }
+function inp(attrs){ return el('input',attrs); }
+
+const HOUSE_TYPES=["Detached","Semi-detached","Terrace","Flat / Apartment","Duplex","Bungalow","Cottage","Rental","Other"];
+
+/* ----- house ----- */
+function openHouseSheet(id){
+  const house=id?state.houses.find(h=>h.id===id):null;
+  const name=inp({placeholder:'e.g. Home, Mum’s house, 12 Oak St',value:house?house.name:''});
+  const addr=inp({placeholder:'Address (optional)',value:house&&house.address?house.address:''});
+  const typeSel=el('select',{}); HOUSE_TYPES.forEach(t=>typeSel.appendChild(el('option',{value:t,selected:house&&house.type===t?'selected':null},t)));
+  openSheet(house?'Edit home':'Add home',(b)=>{
+    b.appendChild(field('Name',name));
+    b.appendChild(field('Type',typeSel));
+    b.appendChild(field('Address',addr));
+    if(!house) b.appendChild(el('div',{class:'hint',style:'margin:-6px 4px 10px'},'We’ll pre-fill common whole-house safety & maintenance jobs (smoke alarms, gutters, filters). You can edit or remove them.'));
+  },()=>{
+    if(!name.value.trim()) return;
+    if(house){ house.name=name.value.trim(); house.type=typeSel.value; house.address=addr.value.trim(); }
+    else{
+      const nh={id:uid(),name:name.value.trim(),type:typeSel.value,address:addr.value.trim(),rooms:[],contacts:[]};
+      addGeneralRoom(nh); state.houses.push(nh);
+    }
+    closeSheet(); save();
+    if(!house) nav({type:'house',id:state.houses[state.houses.length-1].id});
+  });
+}
+
+/* ----- room ----- */
+function openRoomSheet(houseId){
+  const typeSel=el('select',{}); Object.keys(ROOM_TEMPLATES).forEach(t=>typeSel.appendChild(el('option',{value:t},t)));
+  const name=inp({placeholder:'e.g. Master bathroom'});
+  openSheet('Add room',(b)=>{
+    b.appendChild(field('Room type',typeSel));
+    b.appendChild(field('Name',name,'Leave blank to use the type as the name.'));
+  },()=>{
+    addRoom(houseId, name.value.trim()||typeSel.value, typeSel.value);
+    closeSheet();
+  });
+}
+
+/* ----- contact ----- */
+function openContactSheet(houseId,contact){
+  const name=inp({placeholder:'e.g. Dave the plumber',value:contact?contact.name:''});
+  const tradeSel=el('select',{}); TRADES.forEach(t=>tradeSel.appendChild(el('option',{value:t,selected:contact&&contact.trade===t?'selected':null},t)));
+  const phone=inp({type:'tel',placeholder:'Phone number',value:contact&&contact.phone?contact.phone:''});
+  const notes=inp({placeholder:'Notes (optional)',value:contact&&contact.notes?contact.notes:''});
+  openSheet(contact?'Edit contact':'Add contact',(b)=>{
+    b.appendChild(field('Name',name));
+    b.appendChild(field('Trade',tradeSel));
+    b.appendChild(field('Phone',phone));
+    b.appendChild(field('Notes',notes));
+    if(contact) b.appendChild(el('button',{class:'btn danger',onclick:()=>{ const h=state.houses.find(x=>x.id===houseId); h.contacts=h.contacts.filter(c=>c.id!==contact.id); closeSheet(); save(); }},'Delete contact'));
+  },()=>{
+    if(!name.value.trim()) return;
+    const h=state.houses.find(x=>x.id===houseId);
+    if(contact){ contact.name=name.value.trim(); contact.trade=tradeSel.value; contact.phone=phone.value.trim(); contact.notes=notes.value.trim(); }
+    else h.contacts.push({id:uid(),name:name.value.trim(),trade:tradeSel.value,phone:phone.value.trim(),notes:notes.value.trim()});
+    closeSheet(); save();
+  });
+}
+
+/* ----- task picker (from home + button when houses exist) ----- */
+function openTaskPicker(){
+  // choose a house+room to add to, then open task sheet
+  openSheet('Add a job',(b)=>{
+    state.houses.forEach(h=>{
+      b.appendChild(el('div',{class:'grouphdr',style:'margin-left:0'}, h.name));
+      const list=el('div',{class:'list'});
+      h.rooms.forEach(r=>{
+        list.appendChild(el('button',{class:'row tap',onclick:()=>{ closeSheet(); openTaskSheet(h.id,r.id,null); }},[
+          el('div',{class:'r-body'},[el('div',{class:'r-title'},r.name)]), el('span',{html:CHEV})
+        ]));
+      });
+      list.appendChild(el('button',{class:'row tap',style:'color:var(--tint)',onclick:()=>{ closeSheet(); openRoomSheet(h.id); }},[ el('div',{class:'r-body'},[el('div',{class:'r-title',style:'color:var(--tint)'},'+ New room')]) ]));
+      b.appendChild(list);
+    });
+  });
+}
+
+/* ----- task add/edit ----- */
+function openTaskSheet(houseId,roomId,existing){
+  const title=inp({placeholder:'e.g. Repaint the fence',value:existing?existing.title:''});
+  const catSel=el('select',{}); CATEGORIES.forEach(c=>catSel.appendChild(el('option',{value:c,selected:existing&&existing.category===c?'selected':(!existing&&c==='Painting'?'selected':null)},c)));
+  const interval=inp({type:'number',min:'1',placeholder:'6',value:existing?existing.intervalMonths:6});
+  const lastDone=inp({type:'date',value:existing?existing.lastDone:todayISO()});
+  const where=inp({placeholder:'Where to buy materials (optional)',value:existing&&existing.whereToBuy?existing.whereToBuy:''});
+  const notes=el('textarea',{placeholder:'Notes'}); notes.value=existing?existing.notes||'':'';
+
+  // priority segmented
+  let priority=existing?existing.priority||'med':'med';
+  const prioSeg=el('div',{class:'seg'});
+  [['low','Low'],['med','Normal'],['high','High']].forEach(([v,l])=>{
+    const btn=el('button',{class:priority===v?'on':'',onclick:()=>{ priority=v; prioSeg.querySelectorAll('button').forEach(x=>x.classList.remove('on')); btn.classList.add('on'); }},l);
+    prioSeg.appendChild(btn);
+  });
+
+  // tools chiplist
+  let selected=new Set(existing?existing.tools:(CATEGORY_TOOLS[catSel.value]||[]));
+  let custom=[];
+  if(existing){ existing.tools.forEach(tn=>{ if(!(CATEGORY_TOOLS[existing.category]||[]).includes(tn)) custom.push(tn); }); }
+  const chipList=el('div',{class:'chiplist'});
+  function chipOpts(){ return Array.from(new Set([...(CATEGORY_TOOLS[catSel.value]||[]), ...custom])); }
+  function drawChips(){ chipList.innerHTML=''; chipOpts().forEach(tn=>{ const c=el('button',{type:'button',class:'pk'+(selected.has(tn)?' on':'')},tn); c.addEventListener('click',()=>{ selected.has(tn)?selected.delete(tn):selected.add(tn); drawChips(); }); chipList.appendChild(c); }); }
+  drawChips();
+  catSel.addEventListener('change',()=>{ selected=new Set(CATEGORY_TOOLS[catSel.value]||[]); drawChips(); });
+
+  // photo
+  let photo=existing?existing.photo||'':'';
+  const photoPreview=el('div',{});
+  function drawPhoto(){ photoPreview.innerHTML=''; if(photo){ photoPreview.appendChild(el('img',{src:photo,style:'width:100%;border-radius:11px;margin-top:8px;max-height:200px;object-fit:cover'})); photoPreview.appendChild(el('button',{class:'btn plain',style:'padding:6px;font-size:14px;',onclick:()=>{ photo=''; drawPhoto(); }},'Remove photo')); } }
+  const photoInput=el('input',{type:'file',accept:'image/*',style:'display:none',onchange:e=>{
+    const file=e.target.files[0]; if(!file) return;
+    const reader=new FileReader();
+    reader.onload=()=>{ resizeImage(reader.result, 900, (out)=>{ photo=out; drawPhoto(); }); };
+    reader.readAsDataURL(file);
+  }});
+
+  openSheet(existing?'Edit job':'New job',(b)=>{
+    b.appendChild(field('What needs doing',title));
+    b.appendChild(field('Category',catSel));
+    b.appendChild(field('Priority',prioSeg));
+    b.appendChild(field('Repeat every (months)',interval,'Like a service interval — how often it comes round.'));
+    b.appendChild(field('Last done',lastDone));
+    b.appendChild(field('Tools needed',chipList));
+    const customRow=el('div',{style:'display:flex;gap:8px;margin-top:8px'});
+    const ci=inp({placeholder:'Add another tool',style:'flex:1'});
+    customRow.appendChild(ci);
+    customRow.appendChild(el('button',{class:'btn sec',style:'width:auto;padding:12px 16px',onclick:()=>{ const v=ci.value.trim(); if(!v)return; if(!custom.includes(v))custom.push(v); selected.add(v); ci.value=''; drawChips(); }},'Add'));
+    b.appendChild(customRow);
+    b.appendChild(el('div',{style:'height:16px'}));
+    b.appendChild(field('Where to buy',where));
+    b.appendChild(field('Notes',notes));
+    b.appendChild(field('Photo', el('button',{class:'btn sec',onclick:()=>photoInput.click()},'📷 Add photo'))); b.appendChild(photoInput); b.appendChild(photoPreview); drawPhoto();
+    if(existing){
+      b.appendChild(el('div',{style:'height:8px'}));
+      b.appendChild(el('button',{class:'btn danger',onclick:()=>{ deleteTask(houseId,roomId,existing.id); closeSheet(); }},'Delete job'));
+    }
+  },()=>{
+    if(!title.value.trim()) return;
+    const house=state.houses.find(h=>h.id===houseId); const room=house.rooms.find(r=>r.id===roomId);
+    const iv=Number(interval.value)||6; const ld=lastDone.value||todayISO();
+    if(existing){
+      existing.title=title.value.trim(); existing.category=catSel.value; existing.priority=priority;
+      existing.intervalMonths=iv; existing.lastDone=ld; existing.nextDue=addMonths(ld,iv);
+      existing.whereToBuy=where.value.trim(); existing.notes=notes.value.trim();
+      existing.tools=Array.from(selected); existing.photo=photo;
+    } else {
+      room.tasks.push({id:uid(),title:title.value.trim(),category:catSel.value,priority,intervalMonths:iv,
+        lastDone:ld,nextDue:addMonths(ld,iv),whereToBuy:where.value.trim(),notes:notes.value.trim(),
+        tools:Array.from(selected),photo,history:[]});
+    }
+    closeSheet(); save();
+  });
+}
+
+/* ----- mark done (records history + cost) ----- */
+function openMarkDone(houseId,roomId,taskId){
+  const house=state.houses.find(h=>h.id===houseId); const room=house.rooms.find(r=>r.id===roomId); const task=room.tasks.find(t=>t.id===taskId);
+  const date=inp({type:'date',value:todayISO()});
+  const cost=inp({type:'number',min:'0',step:'0.01',placeholder:'0'});
+  const note=inp({placeholder:'e.g. used Dave the plumber'});
+  openSheet('Mark done',(b)=>{
+    b.appendChild(el('p',{style:'color:var(--ink-3);font-size:15px;margin:4px 4px 16px'}, '“'+task.title+'” — logs it as done and schedules the next one in '+intervalText(task.intervalMonths).toLowerCase()+'.'));
+    b.appendChild(field('Date completed',date));
+    b.appendChild(field('Cost ('+state.settings.currency+')',cost,'Optional — feeds your spending summary.'));
+    b.appendChild(field('Note',note,'Optional.'));
+  },()=>{
+    const dt=date.value||todayISO();
+    task.history=task.history||[];
+    task.history.push({date:dt,cost:Number(cost.value)||0,note:note.value.trim()});
+    task.lastDone=dt; task.nextDue=addMonths(dt,task.intervalMonths);
+    closeSheet(); save();
+  });
+}
+
+/* ----- add tool ----- */
+function openAddToolSheet(){
+  const name=inp({placeholder:'e.g. Stud finder'});
+  openSheet('Add tool',(b)=>{ b.appendChild(field('Tool name',name)); },()=>{
+    if(!name.value.trim()) return;
+    state.tools.push({id:uid(),name:name.value.trim(),have:true}); closeSheet(); save();
+  });
+}
+
+/* helper: downscale a data-URL image so localStorage doesn't blow up */
+function resizeImage(dataUrl, maxDim, cb){
+  const img=new Image();
+  img.onload=()=>{
+    let {width:w,height:h}=img;
+    if(w>maxDim||h>maxDim){ if(w>h){ h=Math.round(h*maxDim/w); w=maxDim; } else { w=Math.round(w*maxDim/h); h=maxDim; } }
+    const cv=document.createElement('canvas'); cv.width=w; cv.height=h;
+    cv.getContext('2d').drawImage(img,0,0,w,h);
+    try{ cb(cv.toDataURL('image/jpeg',0.7)); }catch(e){ cb(dataUrl); }
+  };
+  img.onerror=()=>cb(dataUrl);
+  img.src=dataUrl;
+}
+
+/* ============================================================
+   MUTATIONS
+   ============================================================ */
+function addRoom(houseId,name,type){
+  const house=state.houses.find(h=>h.id===houseId); if(!house||!name) return;
+  const room={id:uid(),name,type,tasks:[]};
+  (ROOM_TEMPLATES[type]||[]).forEach(t=>{
+    const iv=t.intervalMonths||6;
+    room.tasks.push({id:uid(),title:t.title,category:t.category||'Other',priority:t.priority||'med',intervalMonths:iv,
+      lastDone:todayISO(),nextDue:addMonths(todayISO(),iv),notes:'',tools:(CATEGORY_TOOLS[t.category]||[]).slice(0,3),whereToBuy:'',photo:'',history:[]});
+  });
+  house.rooms.push(room); save();
+}
+function addGeneralRoom(house){
+  const room={id:uid(),name:'General / Whole house',type:GENERAL_ROOM_TYPE,tasks:[]};
+  GENERAL_TASKS.forEach(t=>{
+    room.tasks.push({id:uid(),title:t.title,category:t.category,priority:t.priority||'med',intervalMonths:t.intervalMonths,
+      lastDone:todayISO(),nextDue:addMonths(todayISO(),t.intervalMonths),notes:'',tools:(CATEGORY_TOOLS[t.category]||[]).slice(0,3),whereToBuy:'',photo:'',history:[]});
+  });
+  house.rooms.push(room);
+}
+function deleteRoom(houseId,roomId){ const h=state.houses.find(x=>x.id===houseId); h.rooms=h.rooms.filter(r=>r.id!==roomId); save(); }
+function deleteTask(houseId,roomId,taskId){ const h=state.houses.find(x=>x.id===houseId); const r=h.rooms.find(x=>x.id===roomId); r.tasks=r.tasks.filter(t=>t.id!==taskId); save(); }
+function deleteHouse(houseId){ state.houses=state.houses.filter(h=>h.id!==houseId); nav({type:'houses'}); save(); }
+
+/* ============================================================
+   TAB BAR + ROOT RENDER
+   ============================================================ */
+const TABS=[
+  {key:'home',   label:'Home',  icon:'<path d="M3 11.5L13 3l10 8.5" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/><path d="M5.5 10v11h15V10" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>'},
+  {key:'houses', label:'Homes', icon:'<rect x="3" y="9" width="8" height="12" rx="1.5" stroke="currentColor" stroke-width="2" fill="none"/><rect x="14" y="4" width="8" height="17" rx="1.5" stroke="currentColor" stroke-width="2" fill="none"/>'},
+  {key:'tools',  label:'Tools', icon:'<path d="M14.5 6.5a4 4 0 01-5.3 5.3L4 17l3 3 5.2-5.2a4 4 0 015.3-5.3l-2.2 2.2-2.1-.6-.6-2.1 2.2-2.2z" stroke="currentColor" stroke-width="2" fill="none" stroke-linejoin="round"/>'},
+  {key:'more',   label:'More',  icon:'<circle cx="5" cy="13" r="2" fill="currentColor"/><circle cx="13" cy="13" r="2" fill="currentColor"/><circle cx="21" cy="13" r="2" fill="currentColor"/>'}
+];
+function currentTab(){ const t=state.view.type; if(t==='house')return'houses'; if(t==='backup'||t==='spending')return'more'; return t; }
+function tabbar(){
+  const bar=el('div',{class:'tabbar'});
+  const cur=currentTab();
+  TABS.forEach(t=>{
+    bar.appendChild(el('button',{class:cur===t.key?'on':'',onclick:()=>{ state.search=''; nav({type:t.key}); }},[
+      el('span',{html:'<svg viewBox="0 0 26 26">'+t.icon+'</svg>'}),
+      el('span',{class:'lab'},t.label)
+    ]));
+  });
+  return bar;
+}
+
+function render(){
+  app.innerHTML='';
+  let scr;
+  switch(state.view.type){
+    case 'home': scr=screenHome(); break;
+    case 'houses': scr=screenHouses(); break;
+    case 'house': scr=screenHouse(state.view.id); break;
+    case 'tools': scr=screenTools(); break;
+    case 'more': scr=screenMore(); break;
+    case 'spending': scr=screenSpending(); break;
+    case 'backup': scr=screenBackup(); break;
+    default: scr=screenHome();
+  }
+  app.appendChild(scr);
+  app.appendChild(tabbar());
+}
+
+/* ============================================================
+   BOOT
+   ============================================================ */
+loadState();
+if('serviceWorker' in navigator){
+  window.addEventListener('load',()=>{ navigator.serviceWorker.register('sw.js').catch(()=>{}); });
+}
+</script>
+</body>
+</html>
