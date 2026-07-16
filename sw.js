@@ -1,4 +1,4 @@
-const CACHE_NAME = 'homekeeper-cache-v2';
+const CACHE_NAME = 'homekeeper-cache-v3';
 const FILES_TO_CACHE = [
   './',
   './index.html',
@@ -8,7 +8,6 @@ const FILES_TO_CACHE = [
   './icon-512.png'
 ];
 
-// On install, cache the app shell so it's available with zero network.
 self.addEventListener('install', (event) => {
   event.waitUntil(caches.open(CACHE_NAME).then((cache) => cache.addAll(FILES_TO_CACHE)));
   self.skipWaiting();
@@ -23,16 +22,34 @@ self.addEventListener('activate', (event) => {
   self.clients.claim();
 });
 
-// Cache-first: serve instantly from cache, refresh in the background when online.
+// Navigations / HTML: network-first so app updates land as soon as you're online,
+// falling back to cache when offline. Other assets: cache-first for speed.
 self.addEventListener('fetch', (event) => {
-  if (event.request.method !== 'GET') return;
+  const req = event.request;
+  if (req.method !== 'GET') return;
+  const isHTML = req.mode === 'navigate' ||
+    (req.headers.get('accept') || '').includes('text/html');
+
+  if (isHTML) {
+    event.respondWith(
+      fetch(req)
+        .then((resp) => {
+          const clone = resp.clone();
+          caches.open(CACHE_NAME).then((c) => c.put(req, clone));
+          return resp;
+        })
+        .catch(() => caches.match(req).then((c) => c || caches.match('./index.html')))
+    );
+    return;
+  }
+
   event.respondWith(
-    caches.match(event.request).then((cached) => {
-      const network = fetch(event.request)
+    caches.match(req).then((cached) => {
+      const network = fetch(req)
         .then((resp) => {
           if (resp && resp.status === 200 && resp.type === 'basic') {
             const clone = resp.clone();
-            caches.open(CACHE_NAME).then((cache) => cache.put(event.request, clone));
+            caches.open(CACHE_NAME).then((c) => c.put(req, clone));
           }
           return resp;
         })
