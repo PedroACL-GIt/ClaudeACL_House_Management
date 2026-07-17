@@ -11,7 +11,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Homekeeper">
 <meta name="theme-color" content="#f4f5f7" media="(prefers-color-scheme: light)">
-<meta name="theme-color" content="#000000" media="(prefers-color-scheme: dark)">
+<meta name="theme-color" content="#1c1c1e" media="(prefers-color-scheme: dark)">
 <style>
 /* ============================================================
    HOMEKEEPER — iOS-styled house-management PWA (v3)
@@ -46,16 +46,16 @@
 }
 @media (prefers-color-scheme: dark){
   :root{
-    --bg:#000000;
-    --bg-grad:linear-gradient(180deg,#121316 0%,#000000 340px);
-    --group-bg:#1c1c1e;
-    --group-bg-2:#2c2c2e;
-    --card-border:rgba(255,255,255,.09);
+    --bg:#1c1c1e;
+    --bg-grad:linear-gradient(180deg,#242426 0%,#1c1c1e 320px);
+    --group-bg:#2c2c2e;
+    --group-bg-2:#3a3a3c;
+    --card-border:rgba(255,255,255,.10);
     --ink:#ffffff;
-    --ink-2:rgba(235,235,245,.88);
-    --ink-3:rgba(235,235,245,.60);
-    --sep:rgba(235,235,245,.14);
-    --sep-strong:rgba(235,235,245,.30);
+    --ink-2:rgba(235,235,245,.90);
+    --ink-3:rgba(235,235,245,.62);
+    --sep:rgba(235,235,245,.16);
+    --sep-strong:rgba(235,235,245,.34);
     --tint:#5b8bff;
     --tint-press:#7aa2ff;
     --tint-tint:rgba(91,139,255,.16);
@@ -63,15 +63,15 @@
     --orange:#ffab2e;      --orange-tint:rgba(255,171,46,.18);
     --green:#3ad667;       --green-tint:rgba(58,214,103,.18);
     --purple:#a78bfa;
-    --fill:rgba(128,132,145,.22);
-    --fill-2:rgba(128,132,145,.32);
-    --nav-bg:rgba(28,28,30,.82);
-    --shadow:none;
+    --fill:rgba(128,132,145,.24);
+    --fill-2:rgba(128,132,145,.36);
+    --nav-bg:rgba(30,30,32,.82);
+    --shadow:0 1px 2px rgba(0,0,0,.3);
     --shadow-lift:0 8px 30px rgba(0,0,0,.5);
   }
 }
 :root[data-theme="light"]{color-scheme:light;--bg:#eef0f4;--bg-grad:linear-gradient(180deg,#f6f7f9 0%,#eef0f4 260px);--group-bg:#fff;--group-bg-2:#fff;--card-border:transparent;--ink:#0b0c0f;--ink-2:#42454c;--ink-3:#8b8f98;--sep:rgba(60,60,67,.12);--sep-strong:rgba(60,60,67,.24);--tint:#2f6bff;--tint-press:#1f4fd6;--tint-tint:rgba(47,107,255,.10);--red:#ff3b30;--red-tint:rgba(255,59,48,.12);--orange:#ff9500;--orange-tint:rgba(255,149,0,.14);--green:#2fbf5b;--green-tint:rgba(47,191,91,.14);--fill:rgba(118,122,133,.10);--fill-2:rgba(118,122,133,.18);--nav-bg:rgba(246,247,249,.8);--shadow:0 1px 3px rgba(16,18,25,.06),0 6px 18px rgba(16,18,25,.04);--shadow-lift:0 8px 30px rgba(16,18,25,.12);}
-:root[data-theme="dark"]{color-scheme:dark;--bg:#000;--bg-grad:linear-gradient(180deg,#121316 0%,#000000 340px);--group-bg:#1c1c1e;--group-bg-2:#2c2c2e;--card-border:rgba(255,255,255,.09);--ink:#fff;--ink-2:rgba(235,235,245,.88);--ink-3:rgba(235,235,245,.60);--sep:rgba(235,235,245,.14);--sep-strong:rgba(235,235,245,.30);--tint:#5b8bff;--tint-press:#7aa2ff;--tint-tint:rgba(91,139,255,.16);--red:#ff5b52;--red-tint:rgba(255,91,82,.18);--orange:#ffab2e;--orange-tint:rgba(255,171,46,.18);--green:#3ad667;--green-tint:rgba(58,214,103,.18);--fill:rgba(128,132,145,.22);--fill-2:rgba(128,132,145,.32);--nav-bg:rgba(28,28,30,.82);--shadow:none;--shadow-lift:0 8px 30px rgba(0,0,0,.5);}
+:root[data-theme="dark"]{color-scheme:dark;--bg:#1c1c1e;--bg-grad:linear-gradient(180deg,#242426 0%,#1c1c1e 320px);--group-bg:#2c2c2e;--group-bg-2:#3a3a3c;--card-border:rgba(255,255,255,.10);--ink:#fff;--ink-2:rgba(235,235,245,.90);--ink-3:rgba(235,235,245,.62);--sep:rgba(235,235,245,.16);--sep-strong:rgba(235,235,245,.34);--tint:#5b8bff;--tint-press:#7aa2ff;--tint-tint:rgba(91,139,255,.16);--red:#ff5b52;--red-tint:rgba(255,91,82,.18);--orange:#ffab2e;--orange-tint:rgba(255,171,46,.18);--green:#3ad667;--green-tint:rgba(58,214,103,.18);--fill:rgba(128,132,145,.24);--fill-2:rgba(128,132,145,.36);--nav-bg:rgba(30,30,32,.82);--shadow:0 1px 2px rgba(0,0,0,.3);--shadow-lift:0 8px 30px rgba(0,0,0,.5);}
 
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
 html,body{margin:0;padding:0;height:100%;}
@@ -132,6 +132,22 @@ a{color:var(--tint);text-decoration:none;}
 .sect.red .h .badge{background:var(--red);} .sect.orange .h .badge{background:var(--orange);} .sect.green .h .badge{background:var(--green);}
 .sect .act{color:var(--tint);font-size:15px;font-weight:600;}
 .grouphdr{font-size:12.5px;color:var(--ink-3);text-transform:uppercase;letter-spacing:.6px;font-weight:700;margin:26px 6px 8px;}
+
+/* filter bar + collapsible room headers */
+.filterbar{display:flex;gap:8px;overflow-x:auto;padding:4px 0 2px;margin:6px 0 2px;-webkit-overflow-scrolling:touch;scrollbar-width:none;}
+.filterbar::-webkit-scrollbar{display:none;}
+.fchip{white-space:nowrap;font-size:14px;font-weight:650;padding:8px 14px;border-radius:20px;background:var(--group-bg);border:.5px solid var(--card-border);color:var(--ink-2);box-shadow:var(--shadow);display:inline-flex;align-items:center;gap:6px;}
+.fchip.on{background:var(--tint);color:#fff;border-color:var(--tint);}
+.fchip .fc-n{font-size:12px;font-weight:700;opacity:.9;}
+.roomhead{display:flex;align-items:center;gap:10px;width:100%;text-align:left;background:none;margin:24px 2px 10px;}
+.roomhead .rh-title{font-size:20px;font-weight:750;letter-spacing:-.01em;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.roomhead .cnt{font-size:12.5px;font-weight:700;color:#fff;background:var(--ink-3);min-width:21px;height:21px;padding:0 6px;border-radius:11px;display:flex;align-items:center;justify-content:center;}
+.roomhead .cnt.red{background:var(--red);}
+.roomhead .rh-edit{color:var(--tint);font-size:19px;padding:2px 4px;}
+.roomhead .rh-chev{width:13px;height:13px;transition:transform .2s ease;}
+.roomhead .rh-chev path{stroke:var(--ink-3);}
+.roomhead.collapsed .rh-chev{transform:rotate(-90deg);}
+.roomjobs{display:flex;flex-direction:column;gap:11px;}
 
 /* ---------- Task card ---------- */
 .cards{display:flex;flex-direction:column;gap:11px;}
@@ -311,6 +327,8 @@ const ROOM_SUGGESTIONS={
   ],
   "Hallway / Stairs":[
     {t:"Check stair rail & banister are secure",c:"Carpentry",m:12},
+    {t:"Re-caulk / seal stair joints & skirting",c:"Carpentry",m:36},
+    {t:"Fix squeaky or loose stair treads",c:"Carpentry",m:24},
     {t:"Test smoke detector",c:"Safety",m:6,p:"high"},
     {t:"Clean the windows",c:"Cleaning",m:3},
     {t:"Repaint / touch up walls & skirting",c:"Painting",m:36}
@@ -454,6 +472,7 @@ const SEARCH_ICO='<svg viewBox="0 0 16 16"><path d="M6.5 1a5.5 5.5 0 013.9 9.4l3
 const PLUS='<svg viewBox="0 0 20 20" fill="none"><path d="M10 3v14M3 10h14" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg>';
 const CART='<svg viewBox="0 0 16 16" fill="none"><path d="M1 1h2l1.5 9h8l1.5-6H4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><circle cx="6" cy="14" r="1.2" fill="currentColor"/><circle cx="12" cy="14" r="1.2" fill="currentColor"/></svg>';
 const PENCIL='<svg viewBox="0 0 16 16" fill="none"><path d="M11 2l3 3-8 8-4 1 1-4 8-8z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></svg>';
+const CARET='<svg class="rh-chev" viewBox="0 0 14 14" fill="none"><path d="M2 5l5 5 5-5" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
 
 function allTasksFlat(){const out=[];state.houses.forEach(h=>h.rooms.forEach(r=>r.tasks.forEach(t=>out.push({house:h,room:r,task:t}))));return out;}
 function nav(view){state.view=view;window.scrollTo(0,0);render();}
@@ -614,11 +633,35 @@ function screenHouse(id){
     body.appendChild(cl);
   } else body.appendChild(el('div',{class:'list'},[el('div',{class:'row',style:'color:var(--ink-3);justify-content:center;'},'No plumber, electrician or trades saved')]));
 
+  // filter bar (jump to overdue / high priority without scrolling every room)
+  const filter=state.view.filter||'all';
+  const allTasks=house.rooms.flatMap(r=>r.tasks);
+  const nOpen=allTasks.filter(t=>taskUrgency(t)!=='done').length;
+  const nOver=allTasks.filter(t=>taskUrgency(t)==='overdue').length;
+  const nHigh=allTasks.filter(t=>t.priority==='high'&&taskUrgency(t)!=='done').length;
+  if(house.rooms.length){
+    const setF=f=>{state.view.filter=f;render();};
+    const bar=el('div',{class:'filterbar'});
+    const chip=(f,label,n,cls)=>el('button',{class:'fchip'+(filter===f?' on':''),onclick:()=>setF(f)},[el('span',{},label),n!=null?el('span',{class:'fc-n'},String(n)):null]);
+    bar.appendChild(chip('all','All jobs',nOpen));
+    if(nOver)bar.appendChild(chip('overdue','⚠ Overdue',nOver));
+    if(nHigh)bar.appendChild(chip('high','● High',nHigh));
+    // collapse / expand all
+    const allCollapsed=house.rooms.every(r=>r.collapsed);
+    bar.appendChild(el('button',{class:'fchip',style:'margin-left:auto;',onclick:()=>{house.rooms.forEach(r=>r.collapsed=!allCollapsed);save();}},allCollapsed?'Expand all':'Collapse all'));
+    body.appendChild(bar);
+  }
+
   // rooms
   const generalRooms=house.rooms.filter(r=>r.type===GENERAL_ROOM_TYPE);
   const normalRooms=house.rooms.filter(r=>r.type!==GENERAL_ROOM_TYPE);
-  normalRooms.forEach(room=>body.appendChild(roomBlock(house,room)));
-  if(generalRooms.length){body.appendChild(el('div',{class:'grouphdr'},'Whole home'));generalRooms.forEach(room=>body.appendChild(roomBlock(house,room,true)));}
+  let shownAny=false;
+  normalRooms.forEach(room=>{const b=roomBlock(house,room,false,filter);if(b){body.appendChild(b);shownAny=true;}});
+  if(generalRooms.length){
+    const gb=[];generalRooms.forEach(room=>{const b=roomBlock(house,room,true,filter);if(b)gb.push(b);});
+    if(gb.length){body.appendChild(el('div',{class:'grouphdr'},'Whole home'));gb.forEach(b=>body.appendChild(b));shownAny=true;}
+  }
+  if(filter!=='all'&&!shownAny)body.appendChild(el('div',{class:'empty',style:'padding:40px 20px;'},[el('div',{class:'big'},'✓'),el('h3',{},'Nothing here'),el('p',{},filter==='overdue'?'No overdue jobs in this home.':'No high-priority jobs open.')]));
 
   body.appendChild(el('div',{style:'height:16px'}));
   body.appendChild(el('button',{class:'btn sec',html:PLUS+'<span>Add a room</span>',onclick:()=>openRoomSheet(house.id)}));
@@ -626,16 +669,32 @@ function screenHouse(id){
   body.appendChild(el('button',{class:'btn danger',onclick:()=>{if(confirm('Delete “'+house.name+'”? This removes all its rooms and jobs.'))deleteHouse(house.id);}},'Delete home'));
   scr.appendChild(body);return scr;
 }
-function roomBlock(house,room,noEmoji){
-  const open=room.tasks.filter(t=>taskUrgency(t)!=='done');
+function roomMatch(t,filter){
+  if(filter==='high')return t.priority==='high'&&taskUrgency(t)!=='done';
+  if(filter==='overdue')return taskUrgency(t)==='overdue';
+  return true;
+}
+function roomBlock(house,room,noEmoji,filter){
+  filter=filter||'all';
+  const shown=room.tasks.filter(t=>roomMatch(t,filter)).sort(taskSort);
+  if(filter!=='all'&&shown.length===0)return null; // hide rooms with no matching jobs
+  const open=room.tasks.filter(t=>taskUrgency(t)!=='done').length;
+  const over=room.tasks.filter(t=>taskUrgency(t)==='overdue').length;
+  const collapsed=filter==='all'?!!room.collapsed:false;
   const block=el('div',{});
-  block.appendChild(el('div',{class:'sect'},[
-    el('div',{class:'h'},[el('span',{},(noEmoji?'':((ROOM_EMOJI[room.type]||'')+' '))+room.name)]),
-    el('button',{class:'act',onclick:()=>openTaskSheet(house.id,room.id,null)},'+ Job')
-  ]));
-  if(room.tasks.length===0)block.appendChild(el('div',{class:'list'},[el('button',{class:'row tap',style:'color:var(--tint);justify-content:center;',onclick:()=>openTaskSheet(house.id,room.id,null)},'Add a job to this room')]));
-  else{const cards=el('div',{class:'cards'});room.tasks.slice().sort(taskSort).forEach(t=>cards.appendChild(taskCard(house,room,t,false)));block.appendChild(cards);}
-  block.appendChild(el('button',{class:'btn plain',style:'padding:8px;font-size:13.5px;justify-content:flex-end;',onclick:()=>{if(confirm('Delete room “'+room.name+'” and its jobs?'))deleteRoom(house.id,room.id);}},'Delete room'));
+  // header (tap to collapse/expand)
+  const head=el('button',{class:'roomhead'+(collapsed?' collapsed':''),onclick:()=>{room.collapsed=!room.collapsed;save();}});
+  head.appendChild(el('span',{html:CARET}));
+  head.appendChild(el('span',{class:'rh-title'},(noEmoji?'':((ROOM_EMOJI[room.type]||'')+' '))+room.name));
+  if(over)head.appendChild(el('span',{class:'cnt red'},String(over)));
+  else if(open)head.appendChild(el('span',{class:'cnt'},String(open)));
+  head.appendChild(el('span',{class:'rh-edit',html:PENCIL,onclick:e=>{e.stopPropagation();openRoomEditSheet(house.id,room.id);}}));
+  block.appendChild(head);
+  if(!collapsed){
+    if(shown.length===0)block.appendChild(el('div',{class:'list'},[el('button',{class:'row tap',style:'color:var(--tint);justify-content:center;',onclick:()=>openTaskSheet(house.id,room.id,null)},'Add a job to this room')]));
+    else{const jobs=el('div',{class:'roomjobs'});shown.forEach(t=>jobs.appendChild(taskCard(house,room,t,false)));block.appendChild(jobs);}
+    block.appendChild(el('button',{class:'btn plain',style:'padding:9px;font-size:14px;justify-content:center;',onclick:()=>openTaskSheet(house.id,room.id,null)},'+ Add job'));
+  }
   return block;
 }
 
@@ -775,12 +834,16 @@ function openRoomSheet(houseId){
     openSuggestSheet(houseId,nm,type,ROOM_SUGGESTIONS[type]||[],()=>nav({type:'house',id:houseId}));
   },'Next');
 }
-/* pick suggested jobs to add to a new room */
-function openSuggestSheet(houseId,roomName,roomType,suggestions,after){
-  const chosen=new Set(suggestions.map((_,i)=>i)); // all pre-selected
+/* pick suggested jobs. If existingRoomId is set, append to that room; otherwise create a new room. */
+function openSuggestSheet(houseId,roomName,roomType,suggestions,after,existingRoomId){
+  const house=state.houses.find(h=>h.id===houseId);
+  const existing=existingRoomId?house.rooms.find(r=>r.id===existingRoomId):null;
+  // when appending, don't re-offer jobs the room already has
+  if(existing){const have=new Set(existing.tasks.map(t=>t.title));suggestions=suggestions.filter(s=>!have.has(s.t));}
+  const chosen=new Set(suggestions.map((_,i)=>i));
   openSheet('Suggested jobs',b=>{
-    b.appendChild(el('p',{style:'color:var(--ink-3);font-size:14.5px;margin:2px 4px 14px;line-height:1.45;'},'Tick the jobs that apply to '+(roomName)+'. You can add, edit or remove any of them later.'));
-    if(suggestions.length===0)b.appendChild(el('div',{class:'banner',style:'background:var(--fill);color:var(--ink-3)'},'No preset jobs for this room — you can add your own after.'));
+    b.appendChild(el('p',{style:'color:var(--ink-3);font-size:14.5px;margin:2px 4px 14px;line-height:1.45;'},existing?('Add any of these '+roomType+' jobs to '+roomName+'.'):('Tick the jobs that apply to '+roomName+'. You can add, edit or remove any of them later.')));
+    if(suggestions.length===0)b.appendChild(el('div',{class:'banner',style:'background:var(--fill);color:var(--ink-3)'},existing?'No more preset jobs to add for this type.':'No preset jobs for this room — you can add your own after.'));
     const box=el('div',{class:'suggest'});
     suggestions.forEach((s,i)=>{
       const row=el('div',{class:'srow'});
@@ -792,11 +855,35 @@ function openSuggestSheet(houseId,roomName,roomType,suggestions,after){
     });
     b.appendChild(box);
   },()=>{
-    const house=state.houses.find(h=>h.id===houseId);
-    const room={id:uid(),name:roomName,type:roomType,tasks:[]};
-    suggestions.forEach((s,i)=>{if(!chosen.has(i))return;room.tasks.push({id:uid(),title:s.t,category:s.c,priority:s.p||'med',kind:'recurring',intervalMonths:s.m,lastDone:todayISO(),nextDue:addMonths(todayISO(),s.m),notes:'',tools:(CATEGORY_TOOLS[s.c]||[]).slice(0,3),whereToBuy:'',photo:'',history:[]});});
-    house.rooms.push(room);closeSheet();save();if(after)after();
-  },'Add room');
+    const mk=s=>({id:uid(),title:s.t,category:s.c,priority:s.p||'med',kind:'recurring',intervalMonths:s.m,lastDone:todayISO(),nextDue:addMonths(todayISO(),s.m),notes:'',tools:(CATEGORY_TOOLS[s.c]||[]).slice(0,3),whereToBuy:'',photo:'',history:[]});
+    if(existing){suggestions.forEach((s,i)=>{if(chosen.has(i))existing.tasks.push(mk(s));});closeSheet();save();if(after)after();}
+    else{const room={id:uid(),name:roomName,type:roomType,tasks:[]};suggestions.forEach((s,i)=>{if(chosen.has(i))room.tasks.push(mk(s));});house.rooms.push(room);closeSheet();save();if(after)after();}
+  },existing?'Add jobs':'Add room');
+}
+
+/* edit a room: rename, change type, optionally pull in that type's suggested jobs */
+function openRoomEditSheet(houseId,roomId){
+  const house=state.houses.find(h=>h.id===houseId);const room=house.rooms.find(r=>r.id===roomId);
+  const name=inp({value:room.name});
+  const typeSel=el('select',{});ROOM_TYPES.forEach(t=>typeSel.appendChild(el('option',{value:t,selected:room.type===t?'selected':null},t)));
+  if(room.type!==GENERAL_ROOM_TYPE)typeSel.value=room.type;
+  openSheet('Edit room',b=>{
+    b.appendChild(field('Name',name));
+    if(room.type!==GENERAL_ROOM_TYPE)b.appendChild(field('Room type',typeSel,'Changing the type keeps your existing jobs. Use the button below to pull in jobs for the new type.'));
+    b.appendChild(el('button',{class:'btn sec',style:'margin-top:2px;',html:PLUS+'<span>Add suggested jobs for this type</span>',onclick:()=>{
+      const t=(room.type!==GENERAL_ROOM_TYPE)?typeSel.value:GENERAL_ROOM_TYPE;
+      // persist any pending rename/retype first so it isn't lost
+      room.name=name.value.trim()||room.name;if(room.type!==GENERAL_ROOM_TYPE)room.type=typeSel.value;
+      const list=room.type===GENERAL_ROOM_TYPE?GENERAL_SUGGESTIONS:(ROOM_SUGGESTIONS[t]||[]);
+      openSuggestSheet(houseId,room.name,t,list,()=>nav({type:'house',id:houseId}),room.id);
+    }},''));
+    b.appendChild(el('div',{style:'height:14px'}));
+    b.appendChild(el('button',{class:'btn danger',onclick:()=>{if(confirm('Delete room “'+room.name+'” and its jobs?')){deleteRoom(houseId,roomId);closeSheet();}}},'Delete room'));
+  },()=>{
+    room.name=name.value.trim()||room.name;
+    if(room.type!==GENERAL_ROOM_TYPE)room.type=typeSel.value;
+    closeSheet();save();
+  });
 }
 
 /* ---------- contact ---------- */
