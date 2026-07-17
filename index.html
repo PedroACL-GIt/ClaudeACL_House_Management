@@ -403,6 +403,35 @@ const TRADES=["Plumber","Electrician","Builder","Roofer","Gardener","Handyman","
 const DEFAULT_TOOLS=["Hammer","Screwdriver set","Drill","Tape measure","Level","Paint brush","Roller","Pipe wrench","Plunger","Ladder","Voltage tester","Wire strippers","Adjustable wrench","Vacuum"];
 const HOUSE_TYPES=["Detached","Semi-detached","Terrace","Flat / Apartment","Duplex","Bungalow","Cottage","Rental","Other"];
 
+/* Tool catalogue: group + emoji for a nice grouped inventory. Ordered groups. */
+const TOOL_GROUPS=[
+  {key:"Hand tools",emoji:"🔨"},
+  {key:"Power tools",emoji:"🛠️"},
+  {key:"Measuring",emoji:"📏"},
+  {key:"Painting & decorating",emoji:"🎨"},
+  {key:"Plumbing",emoji:"🚰"},
+  {key:"Electrical",emoji:"⚡️"},
+  {key:"Access & safety",emoji:"🪜"},
+  {key:"Cleaning",emoji:"🧽"},
+  {key:"Garden & exterior",emoji:"🌿"},
+  {key:"Fixings & extras",emoji:"🔩"},
+  {key:"Other",emoji:"🧰"}
+];
+const TOOL_META={
+  "Hammer":{g:"Hand tools",e:"🔨"},"Screwdriver set":{g:"Hand tools",e:"🪛"},"Adjustable wrench":{g:"Hand tools",e:"🔧"},
+  "Spanner":{g:"Hand tools",e:"🔧"},"Utility knife":{g:"Hand tools",e:"🔪"},"Pliers":{g:"Hand tools",e:"🗜️"},"Saw":{g:"Hand tools",e:"🪚"},"Chisel":{g:"Hand tools",e:"🪚"},"Allen keys":{g:"Hand tools",e:"🔧"},
+  "Drill":{g:"Power tools",e:"🛠️"},"Cordless drill":{g:"Power tools",e:"🛠️"},"Jigsaw":{g:"Power tools",e:"🪚"},"Sander":{g:"Power tools",e:"🌀"},"Angle grinder":{g:"Power tools",e:"⚙️"},
+  "Tape measure":{g:"Measuring",e:"📏"},"Level":{g:"Measuring",e:"📐"},"Spirit level":{g:"Measuring",e:"📐"},"Stud finder":{g:"Measuring",e:"🔍"},"Set square":{g:"Measuring",e:"📐"},
+  "Paint brush":{g:"Painting & decorating",e:"🖌️"},"Roller":{g:"Painting & decorating",e:"🎨"},"Painter's tape":{g:"Painting & decorating",e:"🩹"},"Drop cloth":{g:"Painting & decorating",e:"🧻"},"Sandpaper":{g:"Painting & decorating",e:"📄"},"Filler / spackle":{g:"Painting & decorating",e:"🧴"},
+  "Pipe wrench":{g:"Plumbing",e:"🔧"},"Plunger":{g:"Plumbing",e:"🪠"},"Teflon tape":{g:"Plumbing",e:"🧵"},"Basin wrench":{g:"Plumbing",e:"🔧"},"Drain snake":{g:"Plumbing",e:"🌀"},
+  "Voltage tester":{g:"Electrical",e:"⚡️"},"Wire strippers":{g:"Electrical",e:"✂️"},"Electrical tape":{g:"Electrical",e:"🩹"},"Multimeter":{g:"Electrical",e:"📟"},"Batteries":{g:"Electrical",e:"🔋"},
+  "Ladder":{g:"Access & safety",e:"🪜"},"Step stool":{g:"Access & safety",e:"🪜"},"Safety goggles":{g:"Access & safety",e:"🥽"},"Work gloves":{g:"Access & safety",e:"🧤"},"Dust mask":{g:"Access & safety",e:"😷"},"Torch":{g:"Access & safety",e:"🔦"},
+  "Vacuum":{g:"Cleaning",e:"🧹"},"Microfibre cloths":{g:"Cleaning",e:"🧼"},"Microfiber cloths":{g:"Cleaning",e:"🧼"},"Bucket":{g:"Cleaning",e:"🪣"},"Mop":{g:"Cleaning",e:"🧹"},
+  "Pruning shears":{g:"Garden & exterior",e:"✂️"},"Hose":{g:"Garden & exterior",e:"🚿"},"Fence sealant":{g:"Garden & exterior",e:"🧴"},"Shovel":{g:"Garden & exterior",e:"🪏"},"Rake":{g:"Garden & exterior",e:"🍂"},"Lawnmower":{g:"Garden & exterior",e:"🌱"},
+  "Screws":{g:"Fixings & extras",e:"🔩"},"Nails":{g:"Fixings & extras",e:"📌"},"Filter":{g:"Fixings & extras",e:"🌀"},"Caulk gun":{g:"Fixings & extras",e:"🔫"},"Roofing sealant":{g:"Fixings & extras",e:"🧴"},"Wall plugs":{g:"Fixings & extras",e:"🔩"},"WD-40":{g:"Fixings & extras",e:"🛢️"}
+};
+function toolInfo(t){ if(t.group&&TOOL_GROUPS.some(g=>g.key===t.group)) return {group:t.group,emoji:t.emoji||(TOOL_META[t.name]?TOOL_META[t.name].e:'🧰')}; const m=TOOL_META[t.name]; return m?{group:m.g,emoji:m.e}:{group:'Other',emoji:'🧰'}; }
+
 /* ---------- utils ---------- */
 function uid(){return Math.random().toString(36).slice(2,10);}
 function todayISO(){return new Date().toISOString().slice(0,10);}
@@ -704,17 +733,28 @@ function screenTools(){
   scr.appendChild(topbar({right:plusBtn(openAddToolSheet)}));
   scr.appendChild(el('div',{class:'largetitle'},[el('h1',{},'Tools'),el('div',{class:'sub'},state.tools.filter(t=>t.have).length+' of '+state.tools.length+' in your kit')]));
   const body=el('div',{class:'content'});
-  const list=el('div',{class:'list'});
-  if(state.tools.length===0)list.appendChild(el('div',{class:'row',style:'color:var(--ink-3);justify-content:center;'},'No tools yet'));
-  state.tools.forEach(t=>{
-    const row=el('div',{class:'row'});
-    row.appendChild(el('div',{class:'r-ico',style:'background:'+(t.have?'var(--green)':'var(--fill-2)')+';color:'+(t.have?'#fff':'var(--ink-3)'),html:t.have?TICK_INK:''},t.have?null:'—'));
-    row.appendChild(el('div',{class:'r-body'},[el('div',{class:'r-title'},t.name)]));
-    row.appendChild(makeSwitch(t.have,v=>{t.have=v;save();}));
-    row.appendChild(el('button',{style:'color:var(--ink-3);padding:4px 0 4px 12px;',onclick:()=>{state.tools=state.tools.filter(x=>x.id!==t.id);save();}},'✕'));
-    list.appendChild(row);
+  if(state.tools.length===0){
+    body.appendChild(el('div',{class:'empty'},[el('div',{class:'big'},'🧰'),el('h3',{},'No tools yet'),el('p',{},'Add the tools you own so jobs can flag anything you still need to buy.'),el('button',{class:'btn',style:'max-width:320px;margin:0 auto;',onclick:openAddToolSheet},'Add a tool')]));
+    scr.appendChild(body);return scr;
+  }
+  // group tools by type
+  const groups={};
+  state.tools.forEach(t=>{const info=toolInfo(t);(groups[info.group]=groups[info.group]||[]).push({t,emoji:info.emoji});});
+  TOOL_GROUPS.forEach(g=>{
+    const items=groups[g.key];if(!items||!items.length)return;
+    const owned=items.filter(x=>x.t.have).length;
+    body.appendChild(el('div',{class:'grouphdr',style:'display:flex;align-items:center;gap:7px;'},[el('span',{},g.emoji+'  '+g.key),el('span',{style:'margin-left:auto;font-weight:700;color:var(--ink-3);'},owned+'/'+items.length)]));
+    const list=el('div',{class:'list'});
+    items.sort((a,b)=>a.t.name.localeCompare(b.t.name)).forEach(({t,emoji})=>{
+      const row=el('div',{class:'row'+(t.have?'':' ')});
+      row.appendChild(el('div',{class:'r-ico',style:'background:var(--fill);font-size:17px;'+(t.have?'':'opacity:.55;')},emoji));
+      row.appendChild(el('div',{class:'r-body'},[el('div',{class:'r-title',style:t.have?'':'color:var(--ink-3);'},t.name),t.have?null:el('div',{class:'r-sub'},'Not in kit')]));
+      row.appendChild(makeSwitch(t.have,v=>{t.have=v;save();}));
+      row.appendChild(el('button',{style:'color:var(--ink-3);padding:4px 0 4px 12px;font-size:15px;',onclick:()=>{state.tools=state.tools.filter(x=>x.id!==t.id);save();}},'✕'));
+      list.appendChild(row);
+    });
+    body.appendChild(list);
   });
-  body.appendChild(list);
   body.appendChild(el('div',{class:'fabnote'},'Tools you own show as “in kit”. Jobs needing a tool you don’t have will flag it to buy.'));
   scr.appendChild(body);return scr;
 }
@@ -1003,7 +1043,18 @@ function openMarkDone(house,room,task){
 }
 
 /* ---------- add tool ---------- */
-function openAddToolSheet(){const name=inp({placeholder:'e.g. Stud finder'});openSheet('Add tool',b=>b.appendChild(field('Tool name',name)),()=>{if(!name.value.trim())return;state.tools.push({id:uid(),name:name.value.trim(),have:true});closeSheet();save();});}
+function openAddToolSheet(){
+  const name=inp({placeholder:'e.g. Stud finder'});
+  const groupSel=el('select',{});
+  groupSel.appendChild(el('option',{value:'__auto'},'Auto — detect from name'));
+  TOOL_GROUPS.forEach(g=>groupSel.appendChild(el('option',{value:g.key},g.emoji+'  '+g.key)));
+  openSheet('Add tool',b=>{b.appendChild(field('Tool name',name));b.appendChild(field('Group',groupSel,'Leave on Auto and we’ll sort common tools for you.'));},()=>{
+    if(!name.value.trim())return;
+    const t={id:uid(),name:name.value.trim(),have:true};
+    if(groupSel.value!=='__auto'){t.group=groupSel.value;const g=TOOL_GROUPS.find(x=>x.key===groupSel.value);t.emoji=(TOOL_META[t.name]&&TOOL_META[t.name].e)||(g&&g.emoji)||'🧰';}
+    state.tools.push(t);closeSheet();save();
+  });
+}
 
 function resizeImage(dataUrl,maxDim,cb){const img=new Image();img.onload=()=>{let w=img.width,h=img.height;if(w>maxDim||h>maxDim){if(w>h){h=Math.round(h*maxDim/w);w=maxDim;}else{w=Math.round(w*maxDim/h);h=maxDim;}}const cv=document.createElement('canvas');cv.width=w;cv.height=h;cv.getContext('2d').drawImage(img,0,0,w,h);try{cb(cv.toDataURL('image/jpeg',0.7));}catch(e){cb(dataUrl);}};img.onerror=()=>cb(dataUrl);img.src=dataUrl;}
 
