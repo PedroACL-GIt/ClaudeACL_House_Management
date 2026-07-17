@@ -185,7 +185,12 @@ a{color:var(--tint);text-decoration:none;}
 .tphoto{margin-top:10px;border-radius:12px;width:100%;max-height:190px;object-fit:cover;display:block;}
 .chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:9px;}
 .chip{font-size:11.5px;padding:3px 9px;border-radius:7px;background:var(--fill);color:var(--ink-2);}
+.chip.own{background:var(--green-tint);color:var(--green);}
 .chip.missing{background:var(--red-tint);color:var(--red);}
+.chip.kit{background:var(--tint-tint);color:var(--tint);}
+button.chip{cursor:pointer;}
+button.chip:active{opacity:.6;}
+.toolhint{font-size:12px;color:var(--ink-3);margin-top:7px;line-height:1.4;}
 .cardacts{display:flex;gap:8px;margin-top:12px;}
 .cardacts a,.cardacts button{
   flex:1;padding:9px 8px;border-radius:10px;font-size:14px;font-weight:650;background:var(--fill);color:var(--tint);
@@ -640,9 +645,18 @@ function taskCard(house,room,task,showCrumb){
   if(task.photo)bodyc.appendChild(el('img',{class:'tphoto',src:task.photo,alt:''}));
 
   // tools only matter when you're doing it yourself
-  if(!hire){
+  if(!hire && task.tools && task.tools.length){
     const owned=new Set(state.tools.filter(t=>t.have).map(t=>t.name.toLowerCase()));
-    if(task.tools&&task.tools.length){const chips=el('div',{class:'chips'});task.tools.forEach(tn=>{const have=owned.has(tn.toLowerCase());chips.appendChild(el('span',{class:'chip'+(have?'':' missing')},have?tn:tn+' — buy'));});bodyc.appendChild(chips);}
+    const chips=el('div',{class:'chips'});
+    let anyMissing=false;
+    task.tools.forEach(tn=>{
+      const have=owned.has(tn.toLowerCase());
+      if(have){chips.appendChild(el('span',{class:'chip own'},'✓ '+tn));}
+      else{anyMissing=true;chips.appendChild(el('button',{class:'chip missing',title:'Tap if you already have this',onclick:e=>{e.stopPropagation();ownTool(tn);}},tn+'  ＋ have'));}
+    });
+    chips.appendChild(el('button',{class:'chip kit',onclick:e=>{e.stopPropagation();nav({type:'tools'});}},'🧰 My tools'));
+    bodyc.appendChild(chips);
+    if(anyMissing)bodyc.appendChild(el('div',{class:'toolhint'},'Got one already? Tap the red tool to add it to your kit.'));
   }
 
   const acts=el('div',{class:'cardacts'});
@@ -1177,6 +1191,7 @@ function resizeImage(dataUrl,maxDim,cb){const img=new Image();img.onload=()=>{le
 /* ============================================================ MUTATIONS ============================================================ */
 function deleteRoom(houseId,roomId){const h=state.houses.find(x=>x.id===houseId);h.rooms=h.rooms.filter(r=>r.id!==roomId);save();}
 function deleteTask(houseId,roomId,taskId){const h=state.houses.find(x=>x.id===houseId);const r=h.rooms.find(x=>x.id===roomId);r.tasks=r.tasks.filter(t=>t.id!==taskId);save();}
+function ownTool(name){const ex=state.tools.find(t=>t.name.toLowerCase()===name.toLowerCase());if(ex)ex.have=true;else state.tools.push({id:uid(),name,have:true});save();toast('“'+name+'” added to your kit ✓');}
 function deleteHouse(houseId){state.houses=state.houses.filter(h=>h.id!==houseId);closeSheet();nav({type:'houses'});save();}
 
 /* ============================================================ TAB BAR + RENDER ============================================================ */
