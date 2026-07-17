@@ -1,4 +1,4 @@
-const CACHE_NAME = 'homekeeper-cache-v10';
+const CACHE_NAME = 'homekeeper-cache-v11';
 const FILES_TO_CACHE = [
   './',
   './index.html',
