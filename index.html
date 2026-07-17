@@ -10,68 +10,68 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Homekeeper">
-<meta name="theme-color" content="#f4f5f7" media="(prefers-color-scheme: light)">
-<meta name="theme-color" content="#1c1c1e" media="(prefers-color-scheme: dark)">
+<meta name="theme-color" content="#faf8f3" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#151519" media="(prefers-color-scheme: dark)">
 <style>
 /* ============================================================
    HOMEKEEPER — iOS-styled house-management PWA (v3)
    ============================================================ */
 :root{
-  --bg:#eef0f4;
-  --bg-grad:linear-gradient(180deg,#f6f7f9 0%,#eef0f4 260px);
+  --bg:#f4f2ec;
+  --bg-grad:linear-gradient(180deg,#faf8f3 0%,#f1efe8 320px);
   --group-bg:#ffffff;
   --group-bg-2:#ffffff;
   --card-border:transparent;
-  --ink:#0b0c0f;
-  --ink-2:#42454c;
-  --ink-3:#8b8f98;
-  --sep:rgba(60,60,67,.12);
-  --sep-strong:rgba(60,60,67,.24);
-  --tint:#2f6bff;
-  --tint-press:#1f4fd6;
-  --tint-tint:rgba(47,107,255,.10);
-  --red:#ff3b30;         --red-tint:rgba(255,59,48,.12);
-  --orange:#ff9500;      --orange-tint:rgba(255,149,0,.14);
-  --green:#2fbf5b;       --green-tint:rgba(47,191,91,.14);
+  --ink:#1b1b22;
+  --ink-2:#565863;
+  --ink-3:#9a9ba4;
+  --sep:rgba(30,28,60,.08);
+  --sep-strong:rgba(30,28,60,.16);
+  --tint:#6c5ce7;
+  --tint-press:#5849d6;
+  --tint-tint:rgba(108,92,231,.12);
+  --red:#f2545b;         --red-tint:rgba(242,84,91,.12);
+  --orange:#ff9f1c;      --orange-tint:rgba(255,159,28,.16);
+  --green:#1fbf7a;       --green-tint:rgba(31,191,122,.14);
   --purple:#8b5cf6;
-  --fill:rgba(118,122,133,.10);
-  --fill-2:rgba(118,122,133,.18);
-  --nav-bg:rgba(246,247,249,.8);
-  --shadow:0 1px 3px rgba(16,18,25,.06),0 6px 18px rgba(16,18,25,.04);
-  --shadow-lift:0 8px 30px rgba(16,18,25,.12);
-  --radius:18px;
-  --radius-sm:12px;
+  --fill:rgba(120,118,150,.09);
+  --fill-2:rgba(120,118,150,.17);
+  --nav-bg:rgba(250,248,243,.82);
+  --shadow:0 4px 18px rgba(35,30,70,.06);
+  --shadow-lift:0 14px 40px rgba(35,30,70,.16);
+  --radius:22px;
+  --radius-sm:16px;
   --safe-top:env(safe-area-inset-top,0px);
   --safe-bot:env(safe-area-inset-bottom,0px);
 }
 @media (prefers-color-scheme: dark){
   :root{
-    --bg:#1c1c1e;
-    --bg-grad:linear-gradient(180deg,#242426 0%,#1c1c1e 320px);
-    --group-bg:#2c2c2e;
-    --group-bg-2:#3a3a3c;
-    --card-border:rgba(255,255,255,.10);
+    --bg:#151519;
+    --bg-grad:linear-gradient(180deg,#1e1e26 0%,#151519 320px);
+    --group-bg:#23232e;
+    --group-bg-2:#2f2f3c;
+    --card-border:rgba(255,255,255,.08);
     --ink:#ffffff;
-    --ink-2:rgba(235,235,245,.90);
-    --ink-3:rgba(235,235,245,.62);
-    --sep:rgba(235,235,245,.16);
-    --sep-strong:rgba(235,235,245,.34);
-    --tint:#5b8bff;
-    --tint-press:#7aa2ff;
-    --tint-tint:rgba(91,139,255,.16);
-    --red:#ff5b52;         --red-tint:rgba(255,91,82,.18);
-    --orange:#ffab2e;      --orange-tint:rgba(255,171,46,.18);
-    --green:#3ad667;       --green-tint:rgba(58,214,103,.18);
+    --ink-2:rgba(236,236,245,.90);
+    --ink-3:rgba(236,236,245,.60);
+    --sep:rgba(236,236,245,.14);
+    --sep-strong:rgba(236,236,245,.30);
+    --tint:#8b7cff;
+    --tint-press:#a99bff;
+    --tint-tint:rgba(139,124,255,.18);
+    --red:#ff6b71;         --red-tint:rgba(255,107,113,.20);
+    --orange:#ffb14d;      --orange-tint:rgba(255,177,77,.20);
+    --green:#3ddc91;       --green-tint:rgba(61,220,145,.20);
     --purple:#a78bfa;
-    --fill:rgba(128,132,145,.24);
-    --fill-2:rgba(128,132,145,.36);
-    --nav-bg:rgba(30,30,32,.82);
-    --shadow:0 1px 2px rgba(0,0,0,.3);
-    --shadow-lift:0 8px 30px rgba(0,0,0,.5);
+    --fill:rgba(140,140,165,.20);
+    --fill-2:rgba(140,140,165,.32);
+    --nav-bg:rgba(30,30,38,.82);
+    --shadow:0 6px 20px rgba(0,0,0,.35);
+    --shadow-lift:0 14px 40px rgba(0,0,0,.55);
   }
 }
-:root[data-theme="light"]{color-scheme:light;--bg:#eef0f4;--bg-grad:linear-gradient(180deg,#f6f7f9 0%,#eef0f4 260px);--group-bg:#fff;--group-bg-2:#fff;--card-border:transparent;--ink:#0b0c0f;--ink-2:#42454c;--ink-3:#8b8f98;--sep:rgba(60,60,67,.12);--sep-strong:rgba(60,60,67,.24);--tint:#2f6bff;--tint-press:#1f4fd6;--tint-tint:rgba(47,107,255,.10);--red:#ff3b30;--red-tint:rgba(255,59,48,.12);--orange:#ff9500;--orange-tint:rgba(255,149,0,.14);--green:#2fbf5b;--green-tint:rgba(47,191,91,.14);--fill:rgba(118,122,133,.10);--fill-2:rgba(118,122,133,.18);--nav-bg:rgba(246,247,249,.8);--shadow:0 1px 3px rgba(16,18,25,.06),0 6px 18px rgba(16,18,25,.04);--shadow-lift:0 8px 30px rgba(16,18,25,.12);}
-:root[data-theme="dark"]{color-scheme:dark;--bg:#1c1c1e;--bg-grad:linear-gradient(180deg,#242426 0%,#1c1c1e 320px);--group-bg:#2c2c2e;--group-bg-2:#3a3a3c;--card-border:rgba(255,255,255,.10);--ink:#fff;--ink-2:rgba(235,235,245,.90);--ink-3:rgba(235,235,245,.62);--sep:rgba(235,235,245,.16);--sep-strong:rgba(235,235,245,.34);--tint:#5b8bff;--tint-press:#7aa2ff;--tint-tint:rgba(91,139,255,.16);--red:#ff5b52;--red-tint:rgba(255,91,82,.18);--orange:#ffab2e;--orange-tint:rgba(255,171,46,.18);--green:#3ad667;--green-tint:rgba(58,214,103,.18);--fill:rgba(128,132,145,.24);--fill-2:rgba(128,132,145,.36);--nav-bg:rgba(30,30,32,.82);--shadow:0 1px 2px rgba(0,0,0,.3);--shadow-lift:0 8px 30px rgba(0,0,0,.5);}
+:root[data-theme="light"]{color-scheme:light;--bg:#f4f2ec;--bg-grad:linear-gradient(180deg,#faf8f3 0%,#f1efe8 320px);--group-bg:#fff;--group-bg-2:#fff;--card-border:transparent;--ink:#1b1b22;--ink-2:#565863;--ink-3:#9a9ba4;--sep:rgba(30,28,60,.08);--sep-strong:rgba(30,28,60,.16);--tint:#6c5ce7;--tint-press:#5849d6;--tint-tint:rgba(108,92,231,.12);--red:#f2545b;--red-tint:rgba(242,84,91,.12);--orange:#ff9f1c;--orange-tint:rgba(255,159,28,.16);--green:#1fbf7a;--green-tint:rgba(31,191,122,.14);--fill:rgba(120,118,150,.09);--fill-2:rgba(120,118,150,.17);--nav-bg:rgba(250,248,243,.82);--shadow:0 4px 18px rgba(35,30,70,.06);--shadow-lift:0 14px 40px rgba(35,30,70,.16);}
+:root[data-theme="dark"]{color-scheme:dark;--bg:#151519;--bg-grad:linear-gradient(180deg,#1e1e26 0%,#151519 320px);--group-bg:#23232e;--group-bg-2:#2f2f3c;--card-border:rgba(255,255,255,.08);--ink:#fff;--ink-2:rgba(236,236,245,.90);--ink-3:rgba(236,236,245,.60);--sep:rgba(236,236,245,.14);--sep-strong:rgba(236,236,245,.30);--tint:#8b7cff;--tint-press:#a99bff;--tint-tint:rgba(139,124,255,.18);--red:#ff6b71;--red-tint:rgba(255,107,113,.20);--orange:#ffb14d;--orange-tint:rgba(255,177,77,.20);--green:#3ddc91;--green-tint:rgba(61,220,145,.20);--fill:rgba(140,140,165,.20);--fill-2:rgba(140,140,165,.32);--nav-bg:rgba(30,30,38,.82);--shadow:0 6px 20px rgba(0,0,0,.35);--shadow-lift:0 14px 40px rgba(0,0,0,.55);}
 
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
 html,body{margin:0;padding:0;height:100%;}
@@ -233,6 +233,17 @@ button.row:active,.row.tap:active{background:var(--fill);}
 .tabbar button.on{color:var(--tint);}
 .tabbar svg{width:25px;height:25px;}
 .tabbar .lab{font-size:10px;font-weight:600;letter-spacing:.1px;}
+
+/* floating add button + progress hero (Dribbble-style) */
+.fab{position:fixed;right:16px;bottom:calc(76px + var(--safe-bot));width:58px;height:58px;border-radius:50%;background:var(--tint);color:#fff;display:flex;align-items:center;justify-content:center;box-shadow:0 10px 26px var(--tint-tint),0 6px 16px rgba(20,10,60,.22);z-index:29;transition:transform .12s ease;}
+.fab:active{transform:scale(.93);}
+.fab svg{width:28px;height:28px;}
+.fab svg path{stroke-width:2.4;}
+.hero{border-radius:24px;padding:18px 20px;margin:10px 0 6px;background:linear-gradient(135deg,var(--tint) 0%,#a99bff 100%);color:#fff;display:flex;align-items:center;gap:16px;box-shadow:var(--shadow-lift);}
+.hero .htxt{flex:1;min-width:0;}
+.hero .htxt .hbig{font-size:13px;font-weight:700;letter-spacing:.4px;text-transform:uppercase;opacity:.85;}
+.hero .htxt .hmain{font-size:23px;font-weight:800;letter-spacing:-.01em;margin:3px 0 4px;line-height:1.1;}
+.hero .htxt .hsub{font-size:13.5px;opacity:.9;line-height:1.35;}
 
 /* ---------- Sheet ---------- */
 .scrim{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:40;animation:sfade .2s ease;}
@@ -552,6 +563,11 @@ function topbar(o){return el('div',{class:'topbar'},[
   el('div',{class:'tb-right'},o.right||null)
 ]);}
 function plusBtn(onClick){return el('button',{class:'iconbtn',html:PLUS,'aria-label':'Add',onclick:onClick});}
+function fab(onClick){return el('button',{class:'fab',html:PLUS,'aria-label':'Add',onclick:onClick});}
+function progressRing(pct){
+  const r=26,c=2*Math.PI*r,off=(c*(1-pct/100));
+  return el('div',{class:'ring',html:`<svg width="64" height="64" viewBox="0 0 64 64"><circle cx="32" cy="32" r="26" fill="none" stroke="rgba(255,255,255,.30)" stroke-width="7"/><circle cx="32" cy="32" r="26" fill="none" stroke="#fff" stroke-width="7" stroke-linecap="round" stroke-dasharray="${c.toFixed(1)}" stroke-dashoffset="${off.toFixed(1)}" transform="rotate(-90 32 32)"/><text x="32" y="37" text-anchor="middle" font-size="15" font-weight="800" fill="#fff">${pct}%</text></svg>`});
+}
 
 /* ============================================================ HOME ============================================================ */
 function greeting(){const h=new Date().getHours();return h<12?'Good morning':h<18?'Good afternoon':'Good evening';}
@@ -564,9 +580,11 @@ function searchBox(){
 function screenHome(){
   const scr=el('div',{class:'screen'});
   const flat=allTasksFlat();
-  scr.appendChild(topbar({right:plusBtn(()=>{state.houses.length?openTaskPicker():openHouseSheet();})}));
+  const addFn=()=>{state.houses.length?openTaskPicker():openHouseSheet();};
+  scr.appendChild(topbar({}));
   scr.appendChild(el('div',{class:'largetitle'},[el('h1',{},greeting()),el('div',{class:'sub'},new Date().toLocaleDateString(undefined,{weekday:'long',day:'numeric',month:'long'}))]));
   scr.appendChild(searchBox());
+  if(flat.length)scr.appendChild(fab(addFn));
   const body=el('div',{class:'content'});
   const q=state.search.trim().toLowerCase();
 
@@ -585,6 +603,15 @@ function screenHome(){
   const soon=active.filter(x=>taskUrgency(x.task)==='soon');
   const later=active.filter(x=>taskUrgency(x.task)==='later');
   const done=flat.filter(x=>taskUrgency(x.task)==='done');
+
+  // progress hero
+  const activeTotal=overdue.length+soon.length+later.length;
+  const onTrackPct=activeTotal?Math.round((activeTotal-overdue.length)/activeTotal*100):100;
+  const heroSub=overdue.length?(overdue.length+' job'+(overdue.length===1?'':'s')+' need attention now'):(soon.length?(soon.length+' job'+(soon.length===1?'':'s')+' coming up soon'):'Everything’s under control 🎉');
+  body.appendChild(el('div',{class:'hero'},[
+    progressRing(onTrackPct),
+    el('div',{class:'htxt'},[el('div',{class:'hbig'},'Home health'),el('div',{class:'hmain'},onTrackPct+'% on track'),el('div',{class:'hsub'},heroSub)])
+  ]));
 
   body.appendChild(el('div',{class:'statrow'},[
     el('div',{class:'stat red'},[el('div',{class:'n'},String(overdue.length)),el('div',{class:'l'},'OVERDUE')]),
@@ -678,8 +705,9 @@ function firstName(n){return (n||'').trim().split(' ')[0];}
 /* ============================================================ HOUSES ============================================================ */
 function screenHouses(){
   const scr=el('div',{class:'screen'});
-  scr.appendChild(topbar({right:plusBtn(openHouseSheet)}));
+  scr.appendChild(topbar({}));
   scr.appendChild(el('div',{class:'largetitle'},[el('h1',{},'Homes')]));
+  scr.appendChild(fab(openHouseSheet));
   const body=el('div',{class:'content'});
   if(state.houses.length===0){body.appendChild(el('div',{class:'empty'},[el('div',{class:'big'},'🏠'),el('h3',{},'No homes yet'),el('p',{},'Track maintenance for your own place, a rental, or a family member’s home.'),el('button',{class:'btn',style:'max-width:320px;margin:0 auto;',onclick:openHouseSheet},'Add a home')]));scr.appendChild(body);return scr;}
   const list=el('div',{class:'list'});
@@ -788,8 +816,9 @@ function roomBlock(house,room,noEmoji,filter){
 /* ============================================================ TOOLS ============================================================ */
 function screenTools(){
   const scr=el('div',{class:'screen'});
-  scr.appendChild(topbar({right:plusBtn(openAddToolSheet)}));
+  scr.appendChild(topbar({}));
   scr.appendChild(el('div',{class:'largetitle'},[el('h1',{},'Tools'),el('div',{class:'sub'},state.tools.filter(t=>t.have).length+' of '+state.tools.length+' in your kit')]));
+  scr.appendChild(fab(openAddToolSheet));
   const body=el('div',{class:'content'});
   if(state.tools.length===0){
     body.appendChild(el('div',{class:'empty'},[el('div',{class:'big'},'🧰'),el('h3',{},'No tools yet'),el('p',{},'Add the tools you own so jobs can flag anything you still need to buy.'),el('button',{class:'btn',style:'max-width:320px;margin:0 auto;',onclick:openAddToolSheet},'Add a tool')]));
