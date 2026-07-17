@@ -179,6 +179,8 @@ a{color:var(--tint);text-decoration:none;}
 .pill{font-size:11.5px;font-weight:650;padding:3px 9px;border-radius:20px;background:var(--fill);color:var(--ink-2);display:inline-flex;align-items:center;gap:4px;}
 .pill.prio-high{background:var(--red-tint);color:var(--red);} .pill.prio-low{background:var(--fill);color:var(--ink-3);}
 .pill.recur{background:var(--tint-tint);color:var(--tint);}
+.pill.hire{background:var(--purple);color:#fff;}
+.pill.book{background:var(--green-tint);color:var(--green);}
 .notes{font-size:13.5px;color:var(--ink-3);margin-top:8px;line-height:1.4;}
 .tphoto{margin-top:10px;border-radius:12px;width:100%;max-height:190px;object-fit:cover;display:block;}
 .chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:9px;}
@@ -399,7 +401,9 @@ const CATEGORY_BUY={
 };
 const CATEGORY_ICON={"Painting":"🎨","Plumbing":"🔧","Electrical":"⚡️","HVAC":"🌡️","Carpentry":"🪚","Roofing":"🏠","Appliance":"🔌","Garden / Exterior":"🌿","Safety":"🚨","Cleaning":"🧽","Other":"🛠️"};
 const CATEGORY_COLOR={"Painting":"#8b5cf6","Plumbing":"#2f6bff","Electrical":"#ff9500","HVAC":"#ff2d55","Carpentry":"#a2845e","Appliance":"#5856d6","Garden / Exterior":"#2fbf5b","Roofing":"#7d8590","Safety":"#ff3b30","Cleaning":"#00c7be","Other":"#7d8590"};
-const TRADES=["Plumber","Electrician","Builder","Roofer","Gardener","Handyman","Heating engineer","Decorator","Pest control","Other"];
+const TRADES=["Plumber","Electrician","Builder","Roofer","Gardener","Handyman","Heating engineer","Decorator","Cleaner","Pest control","Other"];
+/* which trade a job's category usually needs */
+const CATEGORY_TRADE={"Plumbing":"Plumber","Electrical":"Electrician","HVAC":"Heating engineer","Roofing":"Roofer","Carpentry":"Builder","Painting":"Decorator","Garden / Exterior":"Gardener","Appliance":"Handyman","Safety":"Handyman","Cleaning":"Cleaner","Other":"Handyman"};
 const DEFAULT_TOOLS=["Hammer","Screwdriver set","Drill","Tape measure","Level","Paint brush","Roller","Pipe wrench","Plunger","Ladder","Voltage tester","Wire strippers","Adjustable wrench","Vacuum"];
 const HOUSE_TYPES=["Detached","Semi-detached","Terrace","Flat / Apartment","Duplex","Bungalow","Cottage","Rental","Other"];
 
@@ -470,6 +474,10 @@ function migrateHouse(h){
       t.kind=t.intervalMonths?'recurring':'oneoff';
     }
     if(t.kind==='oneoff'&&typeof t.done!=='boolean')t.done=false;
+    t.approach=t.approach||'diy';           // 'diy' | 'hire'
+    t.trade=t.trade||CATEGORY_TRADE[t.category]||'Handyman';
+    if(!('assignedContactId' in t))t.assignedContactId=null;
+    if(!('booking' in t))t.booking=null;    // {date, time}
   });});
   return h;
 }
@@ -512,6 +520,25 @@ function buyUrl(task){
   const q=task.whereToBuy&&task.whereToBuy.trim()?task.whereToBuy.trim():((CATEGORY_BUY[task.category]||'hardware store')+' near me');
   return 'https://www.google.com/search?q='+encodeURIComponent(q);
 }
+/* find a tradesperson nearby — opens a live local map search */
+function findPersonUrl(house,task){
+  const trade=task.trade||CATEGORY_TRADE[task.category]||'Handyman';
+  const where=house&&house.address&&house.address.trim()?(' near '+house.address.trim()):' near me';
+  return 'https://www.google.com/maps/search/'+encodeURIComponent(trade+'s'+where);
+}
+/* ---- calendar (events prefixed "APP TESTING:" so they're not mistaken for real meetings) ---- */
+function pad2(n){return (n<10?'0':'')+n;}
+function icsStamp(d){return d.getFullYear()+pad2(d.getMonth()+1)+pad2(d.getDate())+'T'+pad2(d.getHours())+pad2(d.getMinutes())+'00';}
+function bookingDates(task){const b=task.booking||{};const date=b.date||todayISO();const time=(b.time&&/^\d\d:\d\d/.test(b.time))?b.time:'09:00';const start=new Date(date+'T'+time);return {start,end:new Date(start.getTime()+3600000)};}
+function calEventTitle(task){return 'APP TESTING: '+task.title+' ('+(task.trade||'tradesperson')+')';}
+function calDetails(task,contact){return [task.notes||'',contact?('Contact: '+contact.name+(contact.phone?(' '+contact.phone):'')):''].filter(Boolean).join(' — ');}
+function icsFor(house,task,contact){
+  const {start,end}=bookingDates(task);const esc=s=>String(s||'').replace(/([,;\\])/g,'\\$1').replace(/\n/g,'\\n');
+  return ['BEGIN:VCALENDAR','VERSION:2.0','PRODID:-//Homekeeper//Test//EN','BEGIN:VEVENT','UID:'+task.id+'-'+icsStamp(start)+'@homekeeper','DTSTAMP:'+icsStamp(new Date()),'DTSTART:'+icsStamp(start),'DTEND:'+icsStamp(end),'SUMMARY:'+esc(calEventTitle(task)),'LOCATION:'+esc(house.address||house.name),'DESCRIPTION:'+esc(calDetails(task,contact)),'END:VEVENT','END:VCALENDAR'].join('\r\n');
+}
+function gcalUrl(house,task,contact){const {start,end}=bookingDates(task);return 'https://calendar.google.com/calendar/render?action=TEMPLATE&text='+encodeURIComponent(calEventTitle(task))+'&dates='+icsStamp(start)+'/'+icsStamp(end)+'&details='+encodeURIComponent(calDetails(task,contact))+'&location='+encodeURIComponent(house.address||house.name);}
+function downloadICS(house,task,contact){try{const blob=new Blob([icsFor(house,task,contact)],{type:'text/calendar'});const url=URL.createObjectURL(blob);const a=el('a',{href:url,download:'app-testing-booking.ics'});document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1500);}catch(e){alert('Could not create the calendar file here.');}}
+function contactById(house,id){return id?(house.contacts||[]).find(c=>c.id===id):null;}
 
 /* ============================================================ TOP BAR ============================================================ */
 function topbar(o){return el('div',{class:'topbar'},[
@@ -595,27 +622,44 @@ function taskCard(house,room,task,showCrumb){
   else{const d=daysUntil(due);dueText=d<0?`Overdue by ${Math.abs(d)} day${Math.abs(d)===1?'':'s'}`:d===0?'Due today':`Due in ${d} day${d===1?'':'s'}`;}
   bodyc.appendChild(el('div',{class:'due'},[el('span',{class:'txt u-'+u},dueText),due&&u!=='done'?el('span',{class:'date mono'},'· '+fmtDate(due)):null]));
 
+  const hire=task.approach==='hire';
+  const assigned=hire?contactById(house,task.assignedContactId):null;
+
   const meta=el('div',{class:'metarow'});
   meta.appendChild(el('span',{class:'pill'},[el('span',{},CATEGORY_ICON[task.category]||'🛠️'),task.category]));
   if(task.kind==='recurring')meta.appendChild(el('span',{class:'pill recur'},'🔁 '+intervalText(task.intervalMonths)));
   if(task.priority==='high')meta.appendChild(el('span',{class:'pill prio-high'},'● High priority'));
   if(task.priority==='low')meta.appendChild(el('span',{class:'pill prio-low'},'Low priority'));
+  if(hire){
+    meta.appendChild(el('span',{class:'pill hire'},assigned?('🧑‍🔧 '+assigned.name):('🧑‍🔧 Needs a '+(task.trade||'pro').toLowerCase())));
+    if(task.booking&&task.booking.date)meta.appendChild(el('span',{class:'pill book'},'🗓️ '+fmtDate(task.booking.date)+(task.booking.time?(' · '+task.booking.time):'')));
+  }
   bodyc.appendChild(meta);
 
   if(task.notes)bodyc.appendChild(el('div',{class:'notes'},task.notes));
   if(task.photo)bodyc.appendChild(el('img',{class:'tphoto',src:task.photo,alt:''}));
 
-  const owned=new Set(state.tools.filter(t=>t.have).map(t=>t.name.toLowerCase()));
-  if(task.tools&&task.tools.length){const chips=el('div',{class:'chips'});task.tools.forEach(tn=>{const have=owned.has(tn.toLowerCase());chips.appendChild(el('span',{class:'chip'+(have?'':' missing')},have?tn:tn+' — buy'));});bodyc.appendChild(chips);}
+  // tools only matter when you're doing it yourself
+  if(!hire){
+    const owned=new Set(state.tools.filter(t=>t.have).map(t=>t.name.toLowerCase()));
+    if(task.tools&&task.tools.length){const chips=el('div',{class:'chips'});task.tools.forEach(tn=>{const have=owned.has(tn.toLowerCase());chips.appendChild(el('span',{class:'chip'+(have?'':' missing')},have?tn:tn+' — buy'));});bodyc.appendChild(chips);}
+  }
 
   const acts=el('div',{class:'cardacts'});
-  acts.appendChild(el('a',{href:buyUrl(task),target:'_blank',rel:'noopener',html:CART+'<span>Find materials</span>',onclick:e=>e.stopPropagation()}));
-  acts.appendChild(el('button',{html:PENCIL+'<span>Edit</span>',onclick:e=>{e.stopPropagation();openTaskSheet(house.id,room.id,task);}}));
+  if(hire){
+    if(assigned&&assigned.phone)acts.appendChild(el('a',{href:'tel:'+assigned.phone.replace(/\s/g,''),html:'📞 <span>Call '+firstName(assigned.name)+'</span>',onclick:e=>e.stopPropagation()}));
+    else acts.appendChild(el('a',{href:findPersonUrl(house,task),target:'_blank',rel:'noopener',html:'🔍 <span>Find a '+(task.trade||'pro').toLowerCase()+'</span>',onclick:e=>e.stopPropagation()}));
+    acts.appendChild(el('button',{html:'🗓️ <span>Arrange</span>',onclick:e=>{e.stopPropagation();openArrangeSheet(house,room,task);}}));
+  } else {
+    acts.appendChild(el('a',{href:buyUrl(task),target:'_blank',rel:'noopener',html:CART+'<span>Find materials</span>',onclick:e=>e.stopPropagation()}));
+    acts.appendChild(el('button',{html:PENCIL+'<span>Edit</span>',onclick:e=>{e.stopPropagation();openTaskSheet(house.id,room.id,task);}}));
+  }
   bodyc.appendChild(acts);
 
   card.appendChild(bodyc);
   return card;
 }
+function firstName(n){return (n||'').trim().split(' ')[0];}
 
 /* ============================================================ HOUSES ============================================================ */
 function screenHouses(){
@@ -927,20 +971,74 @@ function openRoomEditSheet(houseId,roomId){
 }
 
 /* ---------- contact ---------- */
-function openContactSheet(houseId,contact){
+function openContactSheet(houseId,contact,opts){
+  opts=opts||{};
   const name=inp({placeholder:'e.g. Dave the plumber',value:contact?contact.name:''});
-  const tradeSel=el('select',{});TRADES.forEach(t=>tradeSel.appendChild(el('option',{value:t,selected:contact&&contact.trade===t?'selected':null},t)));
+  const preTrade=contact?contact.trade:(opts.trade||null);
+  const tradeSel=el('select',{});TRADES.forEach(t=>tradeSel.appendChild(el('option',{value:t,selected:preTrade===t?'selected':null},t)));if(preTrade)tradeSel.value=preTrade;
   const phone=inp({type:'tel',placeholder:'Phone number',value:contact&&contact.phone?contact.phone:''});
   const notes=inp({placeholder:'Notes (optional)',value:contact&&contact.notes?contact.notes:''});
+  let newId=null;
   openSheet(contact?'Edit contact':'Add contact',b=>{
     b.appendChild(field('Name',name));b.appendChild(field('Trade',tradeSel));b.appendChild(field('Phone',phone));b.appendChild(field('Notes',notes));
-    if(contact)b.appendChild(el('button',{class:'btn danger',onclick:()=>{const h=state.houses.find(x=>x.id===houseId);h.contacts=h.contacts.filter(c=>c.id!==contact.id);closeSheet();save();}},'Delete contact'));
+    if(contact)b.appendChild(el('button',{class:'btn danger',onclick:()=>{const h=state.houses.find(x=>x.id===houseId);h.contacts=h.contacts.filter(c=>c.id!==contact.id);closeSheet();save();if(opts.after)opts.after(null);}},'Delete contact'));
   },()=>{
     if(!name.value.trim())return;const h=state.houses.find(x=>x.id===houseId);
     if(contact){contact.name=name.value.trim();contact.trade=tradeSel.value;contact.phone=phone.value.trim();contact.notes=notes.value.trim();}
-    else h.contacts.push({id:uid(),name:name.value.trim(),trade:tradeSel.value,phone:phone.value.trim(),notes:notes.value.trim()});
-    closeSheet();save();
+    else{newId=uid();h.contacts.push({id:newId,name:name.value.trim(),trade:tradeSel.value,phone:phone.value.trim(),notes:notes.value.trim()});}
+    closeSheet();save();if(opts.after)opts.after(newId);
   });
+}
+
+/* ---------- arrange: find / assign / book a tradesperson for a job ---------- */
+function openArrangeSheet(house,room,task){
+  openSheet('Arrange this job',b=>{
+    b.appendChild(el('p',{style:'color:var(--ink-3);font-size:14.5px;margin:2px 4px 14px;line-height:1.45;'},'“'+task.title+'” — get a '+(task.trade||'tradesperson').toLowerCase()+' to sort this out.'));
+
+    // 1. find nearby
+    b.appendChild(el('div',{class:'grouphdr',style:'margin-top:4px'},'1 · Find someone nearby'));
+    b.appendChild(el('a',{class:'btn sec',href:findPersonUrl(house,task),target:'_blank',rel:'noopener'},'🔍  Search '+(task.trade||'trades').toLowerCase()+'s'+(house.address?' near '+house.address:' near me')));
+    b.appendChild(el('div',{class:'hint',style:'margin:8px 4px 0'},'Opens a map of local firms with phone numbers. Save the good ones below to call later.'));
+
+    // 2. contacts to call / assign
+    b.appendChild(el('div',{class:'grouphdr'},'2 · People you can call'));
+    const list=el('div',{class:'list'});
+    const contacts=house.contacts||[];
+    if(contacts.length===0)list.appendChild(el('div',{class:'row',style:'color:var(--ink-3);justify-content:center;'},'No saved contacts yet'));
+    contacts.forEach(c=>{
+      const isAssigned=task.assignedContactId===c.id;
+      const row=el('div',{class:'row'});
+      row.appendChild(el('div',{class:'r-ico',style:'background:'+(isAssigned?'var(--green)':'var(--purple)')},isAssigned?'✓':'👤'));
+      row.appendChild(el('div',{class:'r-body'},[el('div',{class:'r-title'},c.name),el('div',{class:'r-sub'},c.trade+(c.phone?(' · '+c.phone):''))]));
+      if(c.phone)row.appendChild(el('a',{href:'tel:'+c.phone.replace(/\s/g,''),style:'color:var(--tint);font-weight:600;padding:4px 8px;',onclick:e=>e.stopPropagation()},'Call'));
+      row.appendChild(el('button',{style:'color:'+(isAssigned?'var(--green)':'var(--tint)')+';font-weight:600;padding:4px 8px;',onclick:()=>{task.assignedContactId=isAssigned?null:c.id;save();openArrangeSheet(house,room,task);}},isAssigned?'Assigned ✓':'Assign'));
+      list.appendChild(row);
+    });
+    b.appendChild(list);
+    b.appendChild(el('button',{class:'btn plain',style:'padding:9px;',html:PLUS+'<span>New contact</span>',onclick:()=>openContactSheet(house.id,null,{trade:task.trade,after:(id)=>{if(id)task.assignedContactId=id;save();openArrangeSheet(house,room,task);}})}));
+
+    // 3. booking + calendar
+    b.appendChild(el('div',{class:'grouphdr'},'3 · Booking'));
+    const bk=task.booking||{};
+    const date=inp({type:'date',value:bk.date||''});
+    const time=inp({type:'time',value:bk.time||'09:00'});
+    const dt=el('div',{style:'display:flex;gap:8px;'});
+    dt.appendChild(el('div',{style:'flex:2'},[field('Date',date)]));
+    dt.appendChild(el('div',{style:'flex:1'},[field('Time',time)]));
+    b.appendChild(dt);
+    const assignedC=contactById(house,task.assignedContactId);
+    b.appendChild(el('button',{class:'btn sec',onclick:()=>{
+      if(!date.value){toast('Pick a date first');return;}
+      task.booking={date:date.value,time:time.value||'09:00'};save();
+      downloadICS(house,task,assignedC);
+    }},'📅  Add to calendar'));
+    b.appendChild(el('a',{class:'btn plain',style:'padding:9px;',href:gcalUrl(house,task,contactById(house,task.assignedContactId)),target:'_blank',rel:'noopener',onclick:()=>{if(date.value){task.booking={date:date.value,time:time.value||'09:00'};save();}}},'Use Google Calendar instead'));
+    b.appendChild(el('div',{class:'hint',style:'margin:8px 4px 0'},'Calendar events are titled “APP TESTING: …” so they’re not mistaken for real meetings.'));
+  },()=>{
+    const date=document.querySelector('.sheet input[type=date]');const time=document.querySelector('.sheet input[type=time]');
+    if(date&&date.value)task.booking={date:date.value,time:(time&&time.value)||'09:00'};
+    closeSheet();save();
+  },'Done');
 }
 
 /* ---------- task picker ---------- */
@@ -977,6 +1075,14 @@ function openTaskSheet(houseId,roomId,existing){
   let priority=existing?existing.priority||'med':'med';
   const prioSeg=el('div',{class:'seg prio'});
   [['low','Low'],['med','Normal'],['high','High']].forEach(([v,l])=>{const btn=el('button',{'data-v':v,class:priority===v?'on':'',onclick:()=>{priority=v;prioSeg.querySelectorAll('button').forEach(x=>x.classList.remove('on'));btn.classList.add('on');}},l);prioSeg.appendChild(btn);});
+  // who's doing it (DIY vs hire)
+  let approach=existing?existing.approach||'diy':'diy';
+  let trade=existing&&existing.trade?existing.trade:(CATEGORY_TRADE[catSel.value]||'Handyman');
+  const tradeSel=el('select',{});TRADES.forEach(t=>tradeSel.appendChild(el('option',{value:t},t)));tradeSel.value=trade;tradeSel.addEventListener('change',()=>{trade=tradeSel.value;});
+  const approachSeg=el('div',{class:'seg'});
+  [['diy','🧑 Do it myself'],['hire','🧑‍🔧 Get someone in']].forEach(([v,l])=>{const btn=el('button',{class:approach===v?'on':'',onclick:()=>{approach=v;approachSeg.querySelectorAll('button').forEach(x=>x.classList.remove('on'));btn.classList.add('on');updateApproachFields();}},l);approachSeg.appendChild(btn);});
+  let diyBox=null,hireBox=null;
+  function updateApproachFields(){if(diyBox)diyBox.style.display=approach==='hire'?'none':'';if(hireBox)hireBox.style.display=approach==='hire'?'':'none';}
   // tools
   let selected=new Set(existing?existing.tools:(CATEGORY_TOOLS[catSel.value]||[]));let custom=[];
   if(existing)existing.tools.forEach(tn=>{if(!(CATEGORY_TOOLS[existing.category]||[]).includes(tn))custom.push(tn);});
@@ -984,7 +1090,7 @@ function openTaskSheet(houseId,roomId,existing){
   function chipOpts(){return Array.from(new Set([...(CATEGORY_TOOLS[catSel.value]||[]),...custom]));}
   function drawChips(){chipList.innerHTML='';chipOpts().forEach(tn=>{const c=el('button',{type:'button',class:'pk'+(selected.has(tn)?' on':'')},tn);c.addEventListener('click',()=>{selected.has(tn)?selected.delete(tn):selected.add(tn);drawChips();});chipList.appendChild(c);});}
   drawChips();
-  catSel.addEventListener('change',()=>{selected=new Set(CATEGORY_TOOLS[catSel.value]||[]);drawChips();});
+  catSel.addEventListener('change',()=>{selected=new Set(CATEGORY_TOOLS[catSel.value]||[]);drawChips();trade=CATEGORY_TRADE[catSel.value]||'Handyman';tradeSel.value=trade;});
   const where=inp({placeholder:'e.g. Screwfix, or a product name',value:existing&&existing.whereToBuy?existing.whereToBuy:''});
   const notes=el('textarea',{placeholder:'Notes'});notes.value=existing?existing.notes||'':'';
   // photo
@@ -998,21 +1104,31 @@ function openTaskSheet(houseId,roomId,existing){
     b.appendChild(field('Category',catSel));
     b.appendChild(oneoffWrap);b.appendChild(recurWrap);b.appendChild(lastWrap);updateKindFields();
     b.appendChild(field('Priority',prioSeg));
-    b.appendChild(field('Tools needed',chipList));
-    const cr=el('div',{style:'display:flex;gap:8px;margin-top:8px'});const ci=inp({placeholder:'Add another tool',style:'flex:1;padding:13px 14px;border-radius:12px;border:.5px solid var(--card-border);background:var(--group-bg-2);color:var(--ink);outline:none;box-shadow:var(--shadow);'});cr.appendChild(ci);cr.appendChild(el('button',{class:'btn sec',style:'width:auto;padding:13px 16px',onclick:()=>{const v=ci.value.trim();if(!v)return;if(!custom.includes(v))custom.push(v);selected.add(v);ci.value='';drawChips();}},'Add'));b.appendChild(cr);
-    b.appendChild(el('div',{style:'height:16px'}));
-    b.appendChild(field('Where to buy materials',where,'Used by the “Find materials” button on the job.'));
+    b.appendChild(field('Who’s doing it?',approachSeg,'“Get someone in” swaps the tools list for finding, calling and booking a tradesperson.'));
+    // hire section
+    hireBox=el('div',{});
+    hireBox.appendChild(field('Who do you need?',tradeSel,'Used to search for local tradespeople and to label the calendar booking.'));
+    hireBox.appendChild(el('div',{class:'banner',style:'background:var(--fill);color:var(--ink-3);'},'After you save, tap “Arrange” on the job to search nearby, save contacts to call, and add a booking to your calendar.'));
+    b.appendChild(hireBox);
+    // DIY section (tools + where to buy)
+    diyBox=el('div',{});
+    diyBox.appendChild(field('Tools needed',chipList));
+    const cr=el('div',{style:'display:flex;gap:8px;margin-top:8px'});const ci=inp({placeholder:'Add another tool',style:'flex:1;padding:13px 14px;border-radius:12px;border:.5px solid var(--card-border);background:var(--group-bg-2);color:var(--ink);outline:none;box-shadow:var(--shadow);'});cr.appendChild(ci);cr.appendChild(el('button',{class:'btn sec',style:'width:auto;padding:13px 16px',onclick:()=>{const v=ci.value.trim();if(!v)return;if(!custom.includes(v))custom.push(v);selected.add(v);ci.value='';drawChips();}},'Add'));diyBox.appendChild(cr);
+    diyBox.appendChild(el('div',{style:'height:16px'}));
+    diyBox.appendChild(field('Where to buy materials',where,'Used by the “Find materials” button on the job.'));
+    b.appendChild(diyBox);
+    updateApproachFields();
     b.appendChild(field('Notes',notes));
     b.appendChild(field('Photo',el('button',{class:'btn sec',onclick:()=>photoInput.click()},'📷 Add photo')));b.appendChild(photoInput);b.appendChild(photoPreview);drawPhoto();
     if(existing){b.appendChild(el('div',{style:'height:8px'}));b.appendChild(el('button',{class:'btn danger',onclick:()=>{deleteTask(houseId,roomId,existing.id);closeSheet();}},'Delete job'));}
   },()=>{
     if(!title.value.trim())return;
     const house=state.houses.find(h=>h.id===houseId);const room=house.rooms.find(r=>r.id===roomId);
-    const base={title:title.value.trim(),category:catSel.value,priority,kind,whereToBuy:where.value.trim(),notes:notes.value.trim(),tools:Array.from(selected),photo};
+    const base={title:title.value.trim(),category:catSel.value,priority,kind,approach,trade,whereToBuy:where.value.trim(),notes:notes.value.trim(),tools:Array.from(selected),photo};
     if(kind==='recurring'){const iv=Number(interval.value)||6;const ld=lastDone.value||todayISO();base.intervalMonths=iv;base.lastDone=ld;base.nextDue=addMonths(ld,iv);}
     else{base.dueDate=dueDate.value||'';base.done=existing&&existing.kind==='oneoff'?existing.done:false;}
     if(existing){Object.keys(base).forEach(k=>existing[k]=base[k]);['intervalMonths','nextDue','lastDone','dueDate'].forEach(k=>{if(!(k in base))delete existing[k];});if(kind==='oneoff'&&typeof existing.done!=='boolean')existing.done=false;}
-    else{base.id=uid();base.history=[];room.tasks.push(base);}
+    else{base.id=uid();base.history=[];base.assignedContactId=null;base.booking=null;room.tasks.push(base);}
     closeSheet();save();
   });
 }
