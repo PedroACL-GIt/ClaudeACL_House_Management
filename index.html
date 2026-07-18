@@ -182,6 +182,15 @@ a{color:var(--tint);text-decoration:none;}
 .pill.hire{background:var(--purple);color:#fff;}
 .pill.book{background:var(--green-tint);color:var(--green);}
 .notes{font-size:13.5px;color:var(--ink-3);margin-top:8px;line-height:1.4;}
+/* compact card status line */
+.mini{font-size:11.5px;font-weight:650;padding:2px 8px;border-radius:12px;background:var(--fill);color:var(--ink-3);white-space:nowrap;}
+.mini.prio-high{background:var(--red-tint);color:var(--red);}
+.mini.book{background:var(--green-tint);color:var(--green);}
+.tcard > .chev-wrap{margin-left:auto;flex-shrink:0;display:flex;align-items:center;align-self:center;}
+.tcard .chev path{stroke:var(--ink-3);opacity:.4;}
+/* detail sheet */
+.dtitle{font-size:22px;font-weight:750;letter-spacing:-.01em;margin:2px 0 6px;line-height:1.25;}
+.dtotal{display:flex;justify-content:space-between;align-items:center;background:var(--group-bg);border:.5px solid var(--card-border);border-radius:var(--radius-sm);padding:12px 15px;box-shadow:var(--shadow);font-weight:700;margin-bottom:10px;}
 .tphoto{margin-top:10px;border-radius:12px;width:100%;max-height:190px;object-fit:cover;display:block;}
 .chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:9px;}
 .chip{font-size:11.5px;padding:3px 9px;border-radius:7px;background:var(--fill);color:var(--ink-2);}
@@ -644,63 +653,136 @@ function taskCard(house,room,task,showCrumb){
     onclick:e=>{e.stopPropagation();toggleDone(house.id,room.id,task.id);}},[el('span',{html:TICK})]);
   card.appendChild(circle);
 
-  const bodyc=el('div',{class:'tbody',onclick:()=>openTaskSheet(house.id,room.id,task)});
+  // COMPACT card: circle + title + one status line. Tap for full details.
+  const hire=task.approach==='hire';
+  const assigned=hire?contactById(house,task.assignedContactId):null;
+  const bodyc=el('div',{class:'tbody'});
   if(showCrumb)bodyc.appendChild(el('div',{class:'crumb'},[el('span',{class:'catdot',style:'background:'+(CATEGORY_COLOR[task.category]||'#888')+'22'},CATEGORY_ICON[task.category]||'🛠️'),el('span',{},house.name+' · '+room.name)]));
   bodyc.appendChild(el('div',{class:'ttl'},task.title));
 
   let dueText;
-  if(u==='done'){const last=task.history&&task.history.length?task.history[task.history.length-1].date:task.lastDone;dueText='Completed'+(last?' '+fmtDate(last):'');}
+  if(u==='done'){const comps=(task.history||[]).filter(h=>!h.expense);const last=comps.length?comps[comps.length-1].date:task.lastDone;dueText='Completed'+(last?' '+fmtDate(last):'');}
   else if(!due)dueText='No date set';
   else{const d=daysUntil(due);dueText=d<0?`Overdue by ${Math.abs(d)} day${Math.abs(d)===1?'':'s'}`:d===0?'Due today':`Due in ${d} day${d===1?'':'s'}`;}
-  bodyc.appendChild(el('div',{class:'due'},[el('span',{class:'txt u-'+u},dueText),due&&u!=='done'?el('span',{class:'date mono'},'· '+fmtDate(due)):null]));
-
-  const hire=task.approach==='hire';
-  const assigned=hire?contactById(house,task.assignedContactId):null;
-
-  const meta=el('div',{class:'metarow'});
-  meta.appendChild(el('span',{class:'pill'},[el('span',{},CATEGORY_ICON[task.category]||'🛠️'),task.category]));
-  if(task.kind==='recurring')meta.appendChild(el('span',{class:'pill recur'},'🔁 '+intervalText(task.intervalMonths)));
-  if(task.priority==='high')meta.appendChild(el('span',{class:'pill prio-high'},'● High priority'));
-  if(task.priority==='low')meta.appendChild(el('span',{class:'pill prio-low'},'Low priority'));
-  if(hire){
-    meta.appendChild(el('span',{class:'pill hire'},assigned?('🧑‍🔧 '+assigned.name):('🧑‍🔧 Needs a '+(task.trade||'pro').toLowerCase())));
-    if(task.booking&&task.booking.date)meta.appendChild(el('span',{class:'pill book'},'🗓️ '+fmtDate(task.booking.date)+(task.booking.time?(' · '+task.booking.time):'')));
-  }
-  bodyc.appendChild(meta);
-
-  if(task.notes)bodyc.appendChild(el('div',{class:'notes'},task.notes));
-  if(task.photo)bodyc.appendChild(el('img',{class:'tphoto',src:task.photo,alt:''}));
-
-  // tools only matter when you're doing it yourself
-  if(!hire && task.tools && task.tools.length){
-    const owned=new Set(state.tools.filter(t=>t.have).map(t=>t.name.toLowerCase()));
-    const chips=el('div',{class:'chips'});
-    let anyMissing=false;
-    task.tools.forEach(tn=>{
-      const have=owned.has(tn.toLowerCase());
-      if(have){chips.appendChild(el('span',{class:'chip own'},'✓ '+tn));}
-      else{anyMissing=true;chips.appendChild(el('button',{class:'chip missing',title:'Tap if you already have this',onclick:e=>{e.stopPropagation();ownTool(tn);}},tn+'  ＋ have'));}
-    });
-    chips.appendChild(el('button',{class:'chip kit',onclick:e=>{e.stopPropagation();nav({type:'tools'});}},'🧰 My tools'));
-    bodyc.appendChild(chips);
-    if(anyMissing)bodyc.appendChild(el('div',{class:'toolhint'},'Got one already? Tap the red tool to add it to your kit.'));
-  }
-
-  const acts=el('div',{class:'cardacts'});
-  if(hire){
-    if(assigned&&assigned.phone)acts.appendChild(el('a',{href:'tel:'+assigned.phone.replace(/\s/g,''),html:'📞 <span>Call '+firstName(assigned.name)+'</span>',onclick:e=>e.stopPropagation()}));
-    else acts.appendChild(el('a',{href:findPersonUrl(house,task),target:'_blank',rel:'noopener',html:'🔍 <span>Find a '+(task.trade||'pro').toLowerCase()+'</span>',onclick:e=>e.stopPropagation()}));
-    acts.appendChild(el('button',{html:'🗓️ <span>Arrange</span>',onclick:e=>{e.stopPropagation();openArrangeSheet(house,room,task);}}));
-  } else {
-    acts.appendChild(el('a',{href:buyUrl(task),target:'_blank',rel:'noopener',html:CART+'<span>Find materials</span>',onclick:e=>e.stopPropagation()}));
-    acts.appendChild(el('button',{html:PENCIL+'<span>Edit</span>',onclick:e=>{e.stopPropagation();openTaskSheet(house.id,room.id,task);}}));
-  }
-  bodyc.appendChild(acts);
+  const line=el('div',{class:'due'},[el('span',{class:'txt u-'+u},dueText)]);
+  if(task.priority==='high'&&u!=='done')line.appendChild(el('span',{class:'mini prio-high'},'High'));
+  if(hire)line.appendChild(el('span',{class:'mini'},'🧑‍🔧 '+(assigned?firstName(assigned.name):(task.trade||'Pro'))));
+  if(hire&&task.booking&&task.booking.date&&u!=='done')line.appendChild(el('span',{class:'mini book'},'🗓️ '+fmtDate(task.booking.date)));
+  if(!showCrumb)line.appendChild(el('span',{class:'mini'},(CATEGORY_ICON[task.category]||'🛠️')));
+  bodyc.appendChild(line);
 
   card.appendChild(bodyc);
+  card.appendChild(el('span',{class:'chev-wrap',html:CHEV}));
+  card.addEventListener('click',()=>openTaskDetail(house.id,room.id,task.id));
   return card;
 }
 function firstName(n){return (n||'').trim().split(' ')[0];}
+
+/* ---------- Task detail (everything lives here now) ---------- */
+function openTaskDetail(houseId,roomId,taskId){
+  const house=state.houses.find(h=>h.id===houseId);if(!house)return;
+  const room=house.rooms.find(r=>r.id===roomId);if(!room)return;
+  const task=room.tasks.find(t=>t.id===taskId);if(!task)return;
+  const u=taskUrgency(task);const due=taskDue(task);
+  const hire=task.approach==='hire';const assigned=hire?contactById(house,task.assignedContactId):null;
+
+  openSheet('Job',b=>{
+    b.appendChild(el('div',{class:'crumb',style:'font-size:13px;margin:2px 0 2px;'},[el('span',{class:'catdot',style:'background:'+(CATEGORY_COLOR[task.category]||'#888')+'22'},CATEGORY_ICON[task.category]||'🛠️'),el('span',{},house.name+' · '+room.name)]));
+    b.appendChild(el('div',{class:'dtitle'},task.title));
+
+    let dueText;
+    if(u==='done'){const comps=(task.history||[]).filter(h=>!h.expense);const last=comps.length?comps[comps.length-1].date:task.lastDone;dueText='Completed'+(last?' '+fmtDate(last):'');}
+    else if(!due)dueText='No date set';
+    else{const d=daysUntil(due);dueText=(d<0?`Overdue by ${Math.abs(d)} day${Math.abs(d)===1?'':'s'}`:d===0?'Due today':`Due in ${d} day${d===1?'':'s'}`)+' · '+fmtDate(due);}
+    b.appendChild(el('div',{class:'due',style:'margin-bottom:10px;'},[el('span',{class:'txt u-'+u},dueText)]));
+
+    const meta=el('div',{class:'metarow',style:'margin-bottom:14px;'});
+    meta.appendChild(el('span',{class:'pill'},[el('span',{},CATEGORY_ICON[task.category]||'🛠️'),task.category]));
+    if(task.kind==='recurring')meta.appendChild(el('span',{class:'pill recur'},'🔁 '+intervalText(task.intervalMonths)));
+    if(task.priority==='high')meta.appendChild(el('span',{class:'pill prio-high'},'● High priority'));
+    if(task.priority==='low')meta.appendChild(el('span',{class:'pill prio-low'},'Low priority'));
+    if(hire){
+      meta.appendChild(el('span',{class:'pill hire'},assigned?('🧑‍🔧 '+assigned.name):('🧑‍🔧 Needs a '+(task.trade||'pro').toLowerCase())));
+      if(task.booking&&task.booking.date)meta.appendChild(el('span',{class:'pill book'},'🗓️ '+fmtDate(task.booking.date)+(task.booking.time?(' · '+task.booking.time):'')));
+    }
+    b.appendChild(meta);
+
+    if(task.notes)b.appendChild(el('div',{class:'notes',style:'margin:0 0 12px;'},task.notes));
+    if(task.photo)b.appendChild(el('img',{class:'tphoto',style:'margin:0 0 12px;',src:task.photo,alt:''}));
+
+    // materials (DIY only)
+    if(!hire&&task.tools&&task.tools.length){
+      b.appendChild(el('div',{class:'grouphdr',style:'margin:12px 4px 8px;'},'Materials & tools'));
+      const owned=new Set(state.tools.filter(t=>t.have).map(t=>t.name.toLowerCase()));
+      const chips=el('div',{class:'chips',style:'margin:0 0 6px;'});
+      let anyMissing=false;
+      task.tools.forEach(tn=>{
+        const have=owned.has(tn.toLowerCase());
+        if(have)chips.appendChild(el('span',{class:'chip own'},'✓ '+tn));
+        else{anyMissing=true;chips.appendChild(el('button',{class:'chip missing',onclick:()=>{ownTool(tn);openTaskDetail(houseId,roomId,taskId);}},tn+'  ＋ have'));}
+      });
+      chips.appendChild(el('button',{class:'chip kit',onclick:()=>{closeSheet();nav({type:'tools'});}},'🧰 My tools'));
+      b.appendChild(chips);
+      if(anyMissing)b.appendChild(el('div',{class:'toolhint',style:'margin:0 0 8px;'},'Red = not in your kit. Tap it if you already have one.'));
+    }
+
+    // actions
+    b.appendChild(el('div',{style:'height:8px'}));
+    b.appendChild(el('button',{class:'btn',onclick:()=>toggleDone(houseId,roomId,taskId)},(task.kind==='oneoff'&&task.done)?'↩︎ Mark as not done':'✓ Mark done'));
+    const row=el('div',{class:'cardacts',style:'margin-top:10px;'});
+    if(hire){
+      if(assigned&&assigned.phone)row.appendChild(el('a',{href:'tel:'+assigned.phone.replace(/\s/g,''),html:'📞 <span>Call '+firstName(assigned.name)+'</span>'}));
+      else row.appendChild(el('a',{href:findPersonUrl(house,task),target:'_blank',rel:'noopener',html:'🔍 <span>Find a '+(task.trade||'pro').toLowerCase()+'</span>'}));
+      row.appendChild(el('button',{html:'🗓️ <span>Arrange</span>',onclick:()=>openArrangeSheet(house,room,task)}));
+    } else {
+      row.appendChild(el('a',{href:buyUrl(task),target:'_blank',rel:'noopener',html:CART+'<span>Find materials</span>'}));
+    }
+    row.appendChild(el('button',{html:PENCIL+'<span>Edit</span>',onclick:()=>openTaskSheet(houseId,roomId,task)}));
+    b.appendChild(row);
+    b.appendChild(el('button',{class:'btn sec',style:'margin-top:10px;',onclick:()=>openAddExpense(houseId,roomId,taskId)},state.settings.currency+'  Log an expense'));
+
+    // history & costs
+    b.appendChild(el('div',{class:'grouphdr'},'History & costs'));
+    const hist=(task.history||[]).slice().reverse();
+    const total=(task.history||[]).reduce((s,h)=>s+(Number(h.cost)||0),0);
+    if(total>0)b.appendChild(el('div',{class:'dtotal'},[el('span',{},'Spent on this job'),el('span',{class:'mono'},money(total))]));
+    if(hist.length===0){
+      b.appendChild(el('div',{class:'hint',style:'margin:0 4px;'},'Nothing logged yet. Costs you add here (or when marking done) feed the Spending summary under More.'));
+    } else {
+      const list=el('div',{class:'list'});
+      hist.slice(0,20).forEach(h=>{
+        list.appendChild(el('div',{class:'row'},[
+          el('div',{class:'r-ico',style:'background:var(--green)'},'✓'),
+          el('div',{class:'r-body'},[el('div',{class:'r-title'},fmtDate(h.date)),h.note?el('div',{class:'r-sub'},h.note):null]),
+          h.cost?el('span',{class:'r-val mono',style:'font-weight:700'},money(h.cost)):null
+        ]));
+      });
+      b.appendChild(list);
+    }
+    b.appendChild(el('div',{style:'height:8px'}));
+    b.appendChild(el('button',{class:'btn danger',onclick:()=>{if(confirm('Delete this job?')){deleteTask(houseId,roomId,taskId);closeSheet();}}},'Delete job'));
+  });
+}
+
+/* log money against a job without completing it */
+function openAddExpense(houseId,roomId,taskId){
+  const house=state.houses.find(h=>h.id===houseId);const room=house.rooms.find(r=>r.id===roomId);const task=room.tasks.find(t=>t.id===taskId);
+  const date=inp({type:'date',value:todayISO()});
+  const cost=inp({type:'number',min:'0',step:'0.01',placeholder:'0'});
+  const note=inp({placeholder:'e.g. paint and brushes'});
+  openSheet('Log an expense',b=>{
+    b.appendChild(el('p',{style:'color:var(--ink-3);font-size:14.5px;margin:2px 4px 14px;line-height:1.45;'},'Money spent on “'+task.title+'” — shows in this job’s history and the Spending summary. Doesn’t mark the job done.'));
+    b.appendChild(field('Date',date));
+    b.appendChild(field('Amount ('+state.settings.currency+')',cost));
+    b.appendChild(field('What for',note,'Optional.'));
+  },()=>{
+    const amt=Number(cost.value)||0;
+    if(amt<=0){toast('Enter an amount');return;}
+    task.history=task.history||[];
+    task.history.push({date:date.value||todayISO(),cost:amt,note:note.value.trim(),expense:true});
+    closeSheet();save();toast('Expense logged · '+money(amt));
+  },'Save');
+}
 
 /* ============================================================ HOUSES ============================================================ */
 function screenHouses(){
@@ -824,6 +906,40 @@ function screenTools(){
     body.appendChild(el('div',{class:'empty'},[el('div',{class:'big'},'🧰'),el('h3',{},'No tools yet'),el('p',{},'Add the tools you own so jobs can flag anything you still need to buy.'),el('button',{class:'btn',style:'max-width:320px;margin:0 auto;',onclick:openAddToolSheet},'Add a tool')]));
     scr.appendChild(body);return scr;
   }
+  // shopping list: materials missing across open DIY jobs, urgent first
+  const rank={overdue:0,soon:1,later:2};
+  const ownedSet=new Set(state.tools.filter(t=>t.have).map(t=>t.name.toLowerCase()));
+  const missing={};
+  allTasksFlat().forEach(({task})=>{
+    const u=taskUrgency(task);
+    if(u==='done'||task.approach==='hire')return;
+    (task.tools||[]).forEach(tn=>{
+      if(ownedSet.has(tn.toLowerCase()))return;
+      const m=missing[tn]=missing[tn]||{urg:3,worst:'later',jobs:0};
+      if(rank[u]<m.urg){m.urg=rank[u];m.worst=u;}
+      m.jobs++;
+    });
+  });
+  const shopping=Object.entries(missing).sort((a,b)=>a[1].urg-b[1].urg||a[0].localeCompare(b[0]));
+  if(shopping.length){
+    body.appendChild(el('div',{class:'grouphdr',style:'display:flex;align-items:center;gap:7px;'},[el('span',{},'🛒  Shopping list'),el('span',{style:'margin-left:auto;font-weight:700;color:var(--ink-3);'},String(shopping.length))]));
+    const sl=el('div',{class:'list'});
+    shopping.forEach(([name,m])=>{
+      const urgent=m.worst==='overdue';
+      const row=el('div',{class:'row'});
+      row.appendChild(el('div',{class:'r-ico',style:'background:'+(urgent?'var(--red)':(m.worst==='soon'?'var(--orange)':'var(--fill-2)'))+';color:'+(m.worst==='later'?'var(--ink-3)':'#fff')+';font-size:15px;'},'🛒'));
+      row.appendChild(el('div',{class:'r-body'},[
+        el('div',{class:'r-title'},name),
+        el('div',{class:'r-sub',style:urgent?'color:var(--red);font-weight:600;':''},'Needed for '+m.jobs+' job'+(m.jobs===1?'':'s')+(urgent?' · overdue job!':(m.worst==='soon'?' · due soon':'')))
+      ]));
+      row.appendChild(el('a',{style:'color:var(--tint);font-weight:650;padding:4px 8px;font-size:15px;',href:'https://www.google.com/search?q='+encodeURIComponent('buy '+name),target:'_blank',rel:'noopener'},'Buy'));
+      row.appendChild(el('button',{style:'color:var(--green);font-weight:650;padding:4px 0 4px 8px;font-size:15px;',onclick:()=>ownTool(name)},'Have it'));
+      sl.appendChild(row);
+    });
+    body.appendChild(sl);
+    body.appendChild(el('div',{class:'fabnote',style:'padding-top:8px;'},'Everything your open do-it-yourself jobs need that isn’t in your kit. Tap “Have it” once you’ve got one.'));
+  }
+
   // group tools by type
   const groups={};
   state.tools.forEach(t=>{const info=toolInfo(t);(groups[info.group]=groups[info.group]||[]).push({t,emoji:info.emoji});});
